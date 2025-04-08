@@ -34,4 +34,4 @@ CREATE TABLE usuarios (
     fecha_expiracion DATE,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_rol) REFERENCES roles(id)
-);
+); 
