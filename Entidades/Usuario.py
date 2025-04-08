@@ -1,10 +1,11 @@
 from datetime import date
 
 class Usuario:
-    def __init__(self, id_rol=None, codigo_usuario=None, nombre=None, apellido=None, email=None,
+    def __init__(self, id_rol=None, rol=None, codigo_usuario=None, nombre=None, apellido=None, email=None,
                  telefono=None, direccion=None, fecha_registro=None, fecha_expiracion=None, activo=True, id=None):
         self._id = id
         self._id_rol = id_rol
+        self._rol = rol  # Nuevo campo
         self._codigo_usuario = codigo_usuario
         self._nombre = nombre
         self._apellido = apellido
@@ -27,6 +28,14 @@ class Usuario:
     @id_rol.setter
     def id_rol(self, value):
         self._id_rol = value
+
+    @property
+    def rol(self):
+        return self._rol
+
+    @rol.setter
+    def rol(self, value):
+        self._rol = value
 
     @property
     def codigo_usuario(self):
@@ -101,4 +110,4 @@ class Usuario:
         self._activo = value
 
     def __str__(self):
-        return f"Usuario({self._codigo_usuario}, {self._nombre} {self._apellido})"
+        return f"Usuario({self._codigo_usuario}, {self._nombre} {self._apellido}, Rol: {self._rol})"
