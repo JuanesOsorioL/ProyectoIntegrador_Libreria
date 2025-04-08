@@ -6,21 +6,32 @@ GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE ON db_biblioteca.* TO 'user_biblio
 CREATE DATABASE db_biblioteca;
 USE db_biblioteca;
 
--- Tabla de autores
-CREATE TABLE autores (
-    id INT NOT NULL AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
-    fecha_nacimiento DATE,
-    nacionalidad VARCHAR(50),
-    biografia TEXT,
-    PRIMARY KEY (id)
+-- 1. Configuración inicial
+CREATE DATABASE db_biblioteca_14;
+USE db_biblioteca_14;
+
+-- 1. Tabla de Roles
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    puede_prestar BOOLEAN DEFAULT FALSE,
+    puede_reservar BOOLEAN DEFAULT TRUE,
+    max_libros INT DEFAULT 3
 );
 
--- Tabla de editoriales
-CREATE TABLE editoriales (
-    id INT NOT NULL AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
-    pais VARCHAR(50),
-    fundacion YEAR,
-    PRIMARY KEY (id)
+-- 2. Tabla de Usuarios
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_rol INT NOT NULL,
+    codigo_usuario VARCHAR(20) UNIQUE NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    telefono VARCHAR(20),
+    direccion TEXT,
+    fecha_registro DATE NOT NULL,
+    fecha_expiracion DATE,
+    activo BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
