@@ -2,6 +2,42 @@
 CREATE USER 'user_biblioteca'@'localhost' IDENTIFIED BY 'B1bl10t3c4_2024!';
 GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE ON db_biblioteca.* TO 'user_biblioteca'@'localhost';
 
+
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL
+);
+
+DELIMITER $$
+CREATE PROCEDURE `Libreria`.`proc_insert_rol`(
+    IN Descripcion VARCHAR(50),
+    INOUT Respuesta INT
+)
+BEGIN
+    INSERT INTO `Libreria`.`roles` (`Descripcion`) 
+    VALUES (Descripcion);
+
+    SET Respuesta = 0;
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE `Libreria`.`proc_select_rol`()
+BEGIN
+    SELECT `id`,
+        `Descripcion`
+    FROM `Libreria`.`roles`;
+END$$
+DELIMITER ;
+
+
+
+
+
+
+
+
 -- Creación de la base de datos
 CREATE DATABASE db_biblioteca;
 USE db_biblioteca;
@@ -35,3 +71,7 @@ CREATE TABLE usuarios (
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_rol) REFERENCES roles(id)
 ); 
+
+
+
+

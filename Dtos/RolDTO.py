@@ -1,4 +1,4 @@
-class Rol:
+class RolDTO:
     id: int = None
     Descripcion: str = None
 

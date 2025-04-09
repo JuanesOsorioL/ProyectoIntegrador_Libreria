@@ -2,6 +2,7 @@ import pyodbc;
 from Entidades import Rol;
 from Utilidades import Configuracion
 
+
 class repositorio:
 
     def GuardarRol(self, rol: Rol) -> bool:
