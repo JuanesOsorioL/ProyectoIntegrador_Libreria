@@ -4,51 +4,70 @@ from Utilidades.Configuracion import Configuracion
 
 class RolRepositorio:
         
-    def ListarRoles(self) -> list:
-        #try:
-            conexion = pyodbc.connect(Configuracion.strConnection);
+    def insertarRol(self, rolDTO: RolDTO) -> int:
+        try:
+            conexion = pyodbc.connect(Configuracion.strConnection)
+            cursor = conexion.cursor()
+            consulta = "{CALL proc_insert_rol(?, @p_NuevoId, @p_Respuesta)}"
+            cursor.execute(consulta, (rolDTO.GetNombre()))
+            cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
+            codigo = cursor.fetchone()
+            conexion.commit()
+            return codigo
+        finally:
+            cursor.close()
+            conexion.close()
 
-            consulta: str = """{CALL Libreria.proc_select_rol();}""";
-            cursor = conexion.cursor();
-            cursor.execute(consulta);
-            resultado = cursor.fetchall();
-            
+    def MostrarTodosLosRoles(self) -> list:
+        try:
+            conexion = pyodbc.connect(Configuracion.strConnection)
+            cursor = conexion.cursor()
+            consulta: str = """{CALL proc_select_rol();}""";
+            cursor.execute(consulta)
+            resultado = cursor.fetchall()
+            return resultado
+        finally:
+            cursor.close()
+            conexion.close()
 
-        #    lista: list = [];
-        #    for rol in cursor:
-        #        entidad: Rol = Rol();
-        #        entidad.SetId(rol[0]);
-        #        entidad.SetDescripcion(rol[1]);
-        #        lista.append(entidad);
-
-            cursor.close();
-            conexion.close();
-            return resultado;
-
-        #    for estado in lista:
-        #        print(str(estado.GetId()) + ", " + estado.GetNombre());
-        #except Exception as ex:
-        #    print(str(ex));
-	
-
-
-    def Guardar(self, rolDTO: RolDTO) -> None:
-        #try:
+    def MostrarRolPorId(self,rolDTO: RolDTO) -> RolDTO:
+        try:
             conexion = pyodbc.connect(Configuracion.strConnection);
             cursor = conexion.cursor();
 
-            consulta: str = "{CALL proc_insert_rol('" + rolDTO.GetDescripcion() + "', @Respuesta);}";
-            cursor.execute(consulta);
-            cursor.commit();
+            consulta = "{CALL proc_select_rol_por_id(?)}"
+            cursor.execute(consulta, rolDTO.GetId())
+            resultado = cursor.fetchone();
+            return resultado
+        finally:
+            cursor.close()
+            conexion.close()
 
-            consulta = "SELECT @Respuesta;";
-            cursor.execute(consulta);
-            
-            cursor.close();
-            conexion.close();
-            return cursor.fetchone()[0];
-        #except Exception as ex:
-        #    print(str(ex));
+    def actualizarRol(self, rolDTO: RolDTO) -> int:
+        try:
+            conexion = pyodbc.connect(Configuracion.strConnection)
+            cursor = conexion.cursor()
+            consulta = "{CALL proc_update_rol(?, ?, @Respuesta)}"
+            cursor.execute(consulta, (rolDTO.GetId(), rolDTO.GetNombre()))
+            cursor.execute("SELECT @Respuesta;")
+            respuesta = cursor.fetchone()[0]
+            conexion.commit()
+            return respuesta
+        finally:
+            cursor.close()
+            conexion.close()
 
 
-
+    def borrarRol(self, rolDTO: RolDTO) -> int:
+        try:
+            conexion = pyodbc.connect(Configuracion.strConnection)
+            cursor = conexion.cursor()
+            consulta = "{CALL proc_delete_rol(?, @Respuesta)}"
+            cursor.execute(consulta, (rolDTO.GetId()))
+            cursor.execute("SELECT @Respuesta;")
+            codigo = cursor.fetchone()[0]
+            conexion.commit()
+            return codigo
+        finally:
+            cursor.close()
+            conexion.close()

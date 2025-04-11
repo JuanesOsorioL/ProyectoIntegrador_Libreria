@@ -1,6 +1,6 @@
 class Rol:
     id: int = None
-    Descripcion: str = None
+    nombre: str = None
 
     def GetId(self) -> int:
         return self.id;
@@ -8,8 +8,8 @@ class Rol:
     def SetId(self, value: int) -> None:
         self.id = value;
 
-    def GetDescripcion(self) -> str:
-        return self.Descripcion;
+    def GetNombre(self) -> str:
+        return self.nombre;
 
-    def SetDescripcion(self, value: str) -> None:
-        self.Descripcion = value;
+    def SetNombre(self, value: str) -> None:
+        self.nombre = value;

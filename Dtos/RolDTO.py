@@ -1,6 +1,10 @@
 class RolDTO:
     id: int = None
-    Descripcion: str = None
+    nombre: str = None
+
+    def __init__(self, id: int, nombre: str):
+        self.id = id
+        self.nombre = nombre
 
     def GetId(self) -> int:
         return self.id;
@@ -8,8 +12,15 @@ class RolDTO:
     def SetId(self, value: int) -> None:
         self.id = value;
 
-    def GetDescripcion(self) -> str:
-        return self.Descripcion;
+    def GetNombre(self) -> str:
+        return self.nombre;
 
-    def SetDescripcion(self, value: str) -> None:
-        self.Descripcion = value;
+    def SetNombre(self, value: str) -> None:
+        self.nombre = value;
+
+    def __str__(self) -> str:
+        return f"Id='{self.id}', Nombre={self.nombre}"
+    
+    def mostrarTodosLosRoles(lista):
+        for rol in lista:
+            print(rol)
