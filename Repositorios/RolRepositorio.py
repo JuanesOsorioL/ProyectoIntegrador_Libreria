@@ -1,15 +1,15 @@
 import pyodbc;
-from Dtos.RolDTO import RolDTO
+from Entidades.Rol import Rol
 from Utilidades.Configuracion import Configuracion
 
 class RolRepositorio:
         
-    def insertarRol(self, rolDTO: RolDTO) -> int:
+    def insertarRol(self, rol: Rol) -> tuple:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
             consulta = "{CALL proc_insert_rol(?, @p_NuevoId, @p_Respuesta)}"
-            cursor.execute(consulta, (rolDTO.GetNombre()))
+            cursor.execute(consulta, (rol.GetNombre()))
             cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
             codigo = cursor.fetchone()
             conexion.commit()
@@ -30,25 +30,25 @@ class RolRepositorio:
             cursor.close()
             conexion.close()
 
-    def MostrarRolPorId(self,rolDTO: RolDTO) -> RolDTO:
+    def MostrarRolPorId(self,rol: Rol) -> Rol:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection);
             cursor = conexion.cursor();
 
             consulta = "{CALL proc_select_rol_por_id(?)}"
-            cursor.execute(consulta, rolDTO.GetId())
+            cursor.execute(consulta, rol.GetId())
             resultado = cursor.fetchone();
             return resultado
         finally:
             cursor.close()
             conexion.close()
 
-    def actualizarRol(self, rolDTO: RolDTO) -> int:
+    def actualizarRol(self, rol: Rol) -> int:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
             consulta = "{CALL proc_update_rol(?, ?, @Respuesta)}"
-            cursor.execute(consulta, (rolDTO.GetId(), rolDTO.GetNombre()))
+            cursor.execute(consulta, (rol.GetId(), rol.GetNombre()))
             cursor.execute("SELECT @Respuesta;")
             respuesta = cursor.fetchone()[0]
             conexion.commit()
@@ -58,12 +58,12 @@ class RolRepositorio:
             conexion.close()
 
 
-    def borrarRol(self, rolDTO: RolDTO) -> int:
+    def borrarRol(self, rol: Rol) -> int:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
             consulta = "{CALL proc_delete_rol(?, @Respuesta)}"
-            cursor.execute(consulta, (rolDTO.GetId()))
+            cursor.execute(consulta, (rol.GetId()))
             cursor.execute("SELECT @Respuesta;")
             codigo = cursor.fetchone()[0]
             conexion.commit()
