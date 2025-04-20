@@ -355,6 +355,6 @@ class Menu:
             conexion.close()
 
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     menu = Menu()
     menu.mostrar_menu()
