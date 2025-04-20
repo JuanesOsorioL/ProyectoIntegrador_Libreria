@@ -339,6 +339,89 @@ class Menu:
                     END IF;
                 END
                 """
+                # Elimina si existen 
+                """
+                DROP PROCEDURE IF EXISTS proc_insert_editorial;
+                DROP PROCEDURE IF EXISTS proc_select_editorial;
+                DROP PROCEDURE IF EXISTS proc_select_editorial_por_id;
+                DROP PROCEDURE IF EXISTS proc_update_editorial;
+                DROP PROCEDURE IF EXISTS proc_delete_editorial;
+                """,
+                #Insertar editorial
+                """
+                CREATE PROCEDURE proc_insert_editorial(
+                    IN p_Nombre VARCHAR(100),
+                    IN p_Pais VARCHAR(50),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE nombre = p_Nombre) THEN
+                        SET p_Respuesta = 2;
+                        SET p_NuevoId = NULL;
+                    ELSE
+                        INSERT INTO editoriales (nombre, pais) VALUES (p_Nombre, p_Pais);
+                        SET p_NuevoId = LAST_INSERT_ID();
+                        SET p_Respuesta = 1;
+                    END IF;
+                END;
+                """,
+
+                #Seleccionar todas las editoriales
+                """
+                CREATE PROCEDURE proc_select_editorial()
+                BEGIN
+                    SELECT id, nombre, pais FROM editoriales;
+                END;
+                """,
+
+                #Seleccionar editorial por ID
+                """
+                CREATE PROCEDURE proc_select_editorial_por_id(
+                    IN p_id INT
+                )
+                BEGIN
+                    SELECT id, nombre, pais FROM editoriales WHERE id = p_id;
+                END;
+                """,
+
+                #Actualizar editorial
+                """
+                CREATE PROCEDURE proc_update_editorial(
+                    IN p_Id INT,
+                    IN p_Nombre VARCHAR(100),
+                    IN p_Pais VARCHAR(50),
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE id = p_Id) THEN
+                        UPDATE editoriales
+                        SET nombre = p_Nombre,
+                            pais = p_Pais
+                        WHERE id = p_Id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END;
+                """,
+
+                #Borrar editorial
+                """
+                CREATE PROCEDURE proc_delete_editorial(
+                    IN p_id INT,
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE id = p_id) THEN
+                        DELETE FROM editoriales WHERE id = p_id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END;
+                """
+
             ]
 
             for proc in procedimientos:
