@@ -389,15 +389,13 @@ class Menu:
                     END IF;
                 END
                 """
-                # Elimina ptocedimientos de la tabla editorial si existen 
+                ,
+                #Insertar editorial
                 """
                 DROP PROCEDURE IF EXISTS proc_insert_editorial;
-                DROP PROCEDURE IF EXISTS proc_select_editorial;
-                DROP PROCEDURE IF EXISTS proc_select_editorial_por_id;
-                DROP PROCEDURE IF EXISTS proc_update_editorial;
-                DROP PROCEDURE IF EXISTS proc_delete_editorial;
-                """,
-                #Insertar editorial
+                """
+                ,
+
                 """
                 CREATE PROCEDURE proc_insert_editorial(
                     IN p_Nombre VARCHAR(100),
@@ -418,6 +416,9 @@ class Menu:
                 """,
 
                 #Seleccionar todas las editoriales
+                """        
+                DROP PROCEDURE IF EXISTS proc_select_editorial;
+                """,
                 """
                 CREATE PROCEDURE proc_select_editorial()
                 BEGIN
@@ -426,6 +427,9 @@ class Menu:
                 """,
 
                 #Seleccionar editorial por ID
+                """
+                DROP PROCEDURE IF EXISTS proc_select_editorial_por_id;
+                """,
                 """
                 CREATE PROCEDURE proc_select_editorial_por_id(
                     IN p_id INT
@@ -436,6 +440,9 @@ class Menu:
                 """,
 
                 #Actualizar editorial
+                """
+                DROP PROCEDURE IF EXISTS proc_update_editorial;
+                """,
                 """
                 CREATE PROCEDURE proc_update_editorial(
                     IN p_Id INT,
@@ -457,6 +464,9 @@ class Menu:
                 """,
 
                 #Borrar editorial
+                """
+                DROP PROCEDURE IF EXISTS proc_delete_editorial;
+                """,
                 """
                 CREATE PROCEDURE proc_delete_editorial(
                     IN p_id INT,
