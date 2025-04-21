@@ -2,12 +2,13 @@ from Controlador.RolControlador import RolControlador
 import pyodbc;
 import os
 from Utilidades.Configuracion import Configuracion
-
-rolControlador = RolControlador();
-
 from Controlador.DevolucionControlador import DevolucionControlador
+from Controlador.EditorialControlador import EditorialControlador
 
+editorialControlador = EditorialControlador();
+rolControlador = RolControlador();
 devolucionControlador = DevolucionControlador()
+
 
 class Menu:
 
@@ -24,6 +25,11 @@ class Menu:
         print("12. Mostrar Devolución por ID")
         print("13. Actualizar Devolución por ID")
         print("14. Borrar Devolución por ID")
+        print("15. Ingresar Editorial")
+        print("16. Mostrar todas las Editoriales")
+        print("17. Mostrar Editorial por ID")
+        print("18. Actualizar Editorial por ID")
+        print("19. Borrar Editorial por ID")
         print("6. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
@@ -79,6 +85,42 @@ class Menu:
                     print(resultado)
                 except ValueError:
                     print("ID inválido.")
+            
+            elif opcion == "15":
+                nombre = input("Ingrese el nombre de la Editorial: ")
+                pais = input("Ingrese el país de la Editorial: ")
+                resultado = editorialControlador.insertarEditorial(nombre, pais)
+                print(resultado)
+
+            elif opcion == "16":
+                resultado = editorialControlador.mostrarTodasLasEditoriales()
+                print(resultado)
+
+            elif opcion == "17":
+                try:
+                    id = int(input("Ingrese el ID de la Editorial: "))
+                    resultado = editorialControlador.mostrarEditorialPorId(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "18":
+                try:
+                    id = int(input("Ingrese el ID de la editorial a actualizar: "))
+                    nombre = input("Ingrese el nuevo nombre de la editorial: ")
+                    pais = input("Ingrese el nuevo país de la editorial: ")
+                    resultado = editorialControlador.actualizarEditorial(id, nombre, pais)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "19":
+                try:
+                    id = int(input("Ingrese el ID de la editorial a borrar: "))
+                    resultado = editorialControlador.borrarEditorial(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")                                      
 
             elif opcion == "10":
                 fecha = input("Ingrese la fecha de devolución (YYYY-MM-DD): ")
@@ -127,7 +169,9 @@ class Menu:
                     print("Opción no válida, intente de nuevo.")
         
 
+
     @staticmethod
+
     def crear_tablas_y_procedimientos():
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
@@ -136,11 +180,64 @@ class Menu:
             # --- Crear tablas ---
             tablas = [
                 """
-            CREATE TABLE IF NOT EXISTS roles (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(50) NOT NULL
-            );
-            """,
+
+                CREATE TABLE IF NOT EXISTS roles (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(50) NOT NULL
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS editoriales (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(100) NOT NULL,
+                    pais VARCHAR(50)
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS autores (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    nombre VARCHAR(100) NOT NULL,
+                    nacionalidad VARCHAR(50)
+                )
+                """,
+                """
+                CREATE TABLE categorias (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    nombre VARCHAR(50) NOT NULL
+                )
+                """,
+                """
+                CREATE TABLE libros (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    titulo VARCHAR(150) NOT NULL,
+                    isbn VARCHAR(20) UNIQUE,
+                    descripcion TEXT,
+                    anio_publicacion YEAR,
+                    formato ENUM('Físico', 'Digital'),
+                    editorial_id INT,
+                    precio DECIMAL(10,2),
+                    stock INT,
+                    FOREIGN KEY (editorial_id) REFERENCES editoriales(id)
+                )
+                """,
+                """
+                CREATE TABLE libro_autor (
+                    libro_id INT,
+                    autor_id INT,
+                    PRIMARY KEY (libro_id, autor_id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id),
+                    FOREIGN KEY (autor_id) REFERENCES autores(id)
+                )
+                """,
+                """
+                CREATE TABLE libro_categoria (
+                    libro_id INT,
+                    categoria_id INT,
+                    PRIMARY KEY (libro_id, categoria_id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id),
+                    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+                )
+                """,
             """
             CREATE TABLE IF NOT EXISTS devoluciones (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -161,6 +258,7 @@ class Menu:
                 # ----------------------------
                 # PROCEDIMIENTOS: ROLES
                 # ----------------------------
+
                 """
                 DROP PROCEDURE IF EXISTS proc_insert_rol
                 """,
@@ -181,6 +279,7 @@ class Menu:
                     END IF;
                 END
                 """,
+
                 """
                 DROP PROCEDURE IF EXISTS proc_select_rol
                 """,
@@ -193,6 +292,7 @@ class Menu:
                     SET p_Respuesta = 1;
                 END
                 """,
+
                 """
                 DROP PROCEDURE IF EXISTS proc_select_rol_por_id
                 """,
@@ -204,6 +304,7 @@ class Menu:
                     SELECT id, nombre FROM roles WHERE id = p_id;
                 END
                 """,
+
                 """
                 DROP PROCEDURE IF EXISTS proc_update_rol
                 """,
@@ -240,6 +341,102 @@ class Menu:
                         SET p_Respuesta = 2;
                     END IF;
                 END
+
+                """
+                ,
+                #Insertar editorial
+                """
+                DROP PROCEDURE IF EXISTS proc_insert_editorial;
+                """
+                ,
+
+                """
+                CREATE PROCEDURE proc_insert_editorial(
+                    IN p_Nombre VARCHAR(100),
+                    IN p_Pais VARCHAR(50),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE nombre = p_Nombre) THEN
+                        SET p_Respuesta = 2;
+                        SET p_NuevoId = NULL;
+                    ELSE
+                        INSERT INTO editoriales (nombre, pais) VALUES (p_Nombre, p_Pais);
+                        SET p_NuevoId = LAST_INSERT_ID();
+                        SET p_Respuesta = 1;
+                    END IF;
+                END;
+                """,
+
+                #Seleccionar todas las editoriales
+                """        
+                DROP PROCEDURE IF EXISTS proc_select_editorial;
+                """,
+                """
+                CREATE PROCEDURE proc_select_editorial()
+                BEGIN
+                    SELECT id, nombre, pais FROM editoriales;
+                END;
+                """,
+
+                #Seleccionar editorial por ID
+                """
+                DROP PROCEDURE IF EXISTS proc_select_editorial_por_id;
+                """,
+                """
+                CREATE PROCEDURE proc_select_editorial_por_id(
+                    IN p_id INT
+                )
+                BEGIN
+                    SELECT id, nombre, pais FROM editoriales WHERE id = p_id;
+                END;
+                """,
+
+                #Actualizar editorial
+                """
+                DROP PROCEDURE IF EXISTS proc_update_editorial;
+                """,
+                """
+                CREATE PROCEDURE proc_update_editorial(
+                    IN p_Id INT,
+                    IN p_Nombre VARCHAR(100),
+                    IN p_Pais VARCHAR(50),
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE id = p_Id) THEN
+                        UPDATE editoriales
+                        SET nombre = p_Nombre,
+                            pais = p_Pais
+                        WHERE id = p_Id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END;
+                """,
+
+                #Borrar editorial
+                """
+                DROP PROCEDURE IF EXISTS proc_delete_editorial;
+                """,
+                """
+                CREATE PROCEDURE proc_delete_editorial(
+                    IN p_id INT,
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE id = p_id) THEN
+                        DELETE FROM editoriales WHERE id = p_id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END;
+                """
+
+
                 """,
                 # ----------------------------
                 # PROCEDIMIENTOS: USUARIOS
@@ -458,6 +655,7 @@ class Menu:
                     END IF;
                 END
                 """
+
             ]
 
             for proc in procedimientos:
@@ -465,6 +663,7 @@ class Menu:
 
             conexion.commit()
             print("Procedimientos almacenados creados correctamente.")
+
 
         except Exception as e:
             if "1050" in str(e):
@@ -861,6 +1060,12 @@ class Menu:
 
 
 
+        except Exception as e:
+            print("❌ Error:", e)
+
+        finally:
+            cursor.close()
+            conexion.close()
 
 
 if __name__ == "__main__":
