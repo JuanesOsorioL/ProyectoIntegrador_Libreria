@@ -20,7 +20,3 @@ class RolDTO:
 
     def __str__(self) -> str:
         return f"Id='{self.id}', Nombre={self.nombre}"
-    
-    def mostrarTodosLosRoles(lista):
-        for rol in lista:
-            print(rol)

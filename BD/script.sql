@@ -12,7 +12,7 @@ CREATE TABLE roles (
 
 --insertar rol
 DELIMITER $$
-CREATE PROCEDURE `libreria`.`proc_insert_rol`(
+CREATE PROCEDURE `proc_insert_rol`(
     IN p_Nombre VARCHAR(50),
     OUT p_NuevoId INT,
     OUT p_Respuesta INT
@@ -31,7 +31,7 @@ DELIMITER ;
 
 --mostrar todos los roles
 DELIMITER $$
-CREATE PROCEDURE `Libreria`.`proc_select_rol`(
+CREATE PROCEDURE `proc_select_rol`(
     INOUT p_Respuesta INT
 )
 BEGIN
@@ -58,7 +58,7 @@ DELIMITER ;
 
 --actualizar rol
 DELIMITER $$
-CREATE PROCEDURE `libreria`.`proc_update_rol`(
+CREATE PROCEDURE `proc_update_rol`(
     IN p_Id INT,
     IN p_Nombre VARCHAR(50),
     INOUT p_Respuesta INT
