@@ -12,7 +12,7 @@ CREATE TABLE roles (
 
 --insertar rol
 DELIMITER $$
-CREATE PROCEDURE `libreria`.`proc_insert_rol`(
+CREATE PROCEDURE `proc_insert_rol`(
     IN p_Nombre VARCHAR(50),
     OUT p_NuevoId INT,
     OUT p_Respuesta INT
@@ -31,7 +31,7 @@ DELIMITER ;
 
 --mostrar todos los roles
 DELIMITER $$
-CREATE PROCEDURE `Libreria`.`proc_select_rol`(
+CREATE PROCEDURE `proc_select_rol`(
     INOUT p_Respuesta INT
 )
 BEGIN
@@ -58,7 +58,7 @@ DELIMITER ;
 
 --actualizar rol
 DELIMITER $$
-CREATE PROCEDURE `libreria`.`proc_update_rol`(
+CREATE PROCEDURE `proc_update_rol`(
     IN p_Id INT,
     IN p_Nombre VARCHAR(50),
     INOUT p_Respuesta INT
@@ -91,6 +91,111 @@ BEGIN
     END IF;
 END$$
 DELIMITER ;
+
+-- =============================
+-- = SECCIÓN: TABLA DEVOLUCION =
+-- =============================
+
+CREATE TABLE IF NOT EXISTS devoluciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_real_devolucion DATE NOT NULL,
+    estado_libro VARCHAR(50) NOT NULL,
+    observaciones TEXT
+);
+
+--Insertar
+DELIMITER //
+CREATE PROCEDURE proc_insert_devolucion (
+    IN p_fecha DATE,
+    IN p_estado VARCHAR(50),
+    IN p_observaciones TEXT,
+    OUT p_NuevoId INT,
+    OUT p_Respuesta INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET p_Respuesta = 0;
+    END;
+
+    INSERT INTO devoluciones (fecha_real_devolucion, estado_libro, observaciones)
+    VALUES (p_fecha, p_estado, p_observaciones);
+
+    SET p_NuevoId = LAST_INSERT_ID();
+    SET p_Respuesta = 1;
+END;
+//
+DELIMITER ;
+
+--Mostrar
+DELIMITER //
+CREATE PROCEDURE proc_select_devolucion()
+BEGIN
+    SELECT * FROM devoluciones;
+END;
+//
+DELIMITER ;
+
+--Mostrar por ID
+DELIMITER //
+CREATE PROCEDURE proc_select_devolucion_por_id (
+    IN p_id INT
+)
+BEGIN
+    SELECT * FROM devoluciones WHERE id = p_id;
+END;
+//
+DELIMITER ;
+
+--Actualizar
+DELIMITER //
+CREATE PROCEDURE proc_update_devolucion (
+    IN p_id INT,
+    IN p_fecha DATE,
+    IN p_estado VARCHAR(50),
+    IN p_observaciones TEXT,
+    OUT Respuesta INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET Respuesta = 0;
+    END;
+
+    UPDATE devoluciones
+    SET fecha_real_devolucion = p_fecha,
+        estado_libro = p_estado,
+        observaciones = p_observaciones
+    WHERE id = p_id;
+
+    IF ROW_COUNT() > 0 THEN
+        SET Respuesta = 1;
+    ELSE
+        SET Respuesta = 2; -- No se encontró
+    END IF;
+END;
+//
+DELIMITER ;
+
+--Eliminar
+DELIMITER //
+CREATE PROCEDURE proc_delete_devolucion (
+    IN p_id INT,
+    OUT Respuesta INT
+)
+BEGIN
+    DELETE FROM devoluciones WHERE id = p_id;
+
+    IF ROW_COUNT() > 0 THEN
+        SET Respuesta = 1;
+    ELSE
+        SET Respuesta = 2;
+    END IF;
+END;
+//
+DELIMITER ;
+
+
 
 
 
@@ -138,6 +243,14 @@ CREATE TABLE usuarios (
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_rol) REFERENCES roles(id)
 ); 
+
+-- Tabla: devoluciones
+CREATE TABLE IF NOT EXISTS devoluciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_real_devolucion DATE NOT NULL,
+    estado_libro VARCHAR(50) NOT NULL,
+    observaciones TEXT
+);
 
 
 

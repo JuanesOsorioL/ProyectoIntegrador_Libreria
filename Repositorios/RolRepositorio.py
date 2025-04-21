@@ -8,7 +8,7 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_insert_rol(?, @p_NuevoId, @p_Respuesta)}"
+            consulta = "{CALL proc_insert_rol(?, @p_NuevoId, @p_Respuesta);}"
             cursor.execute(consulta, (rol.GetNombre()))
             cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
             codigo = cursor.fetchone()
@@ -22,7 +22,7 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta: str = """{CALL proc_select_rol();}""";
+            consulta: str = """{CALL proc_select_rol(@p_Respuesta);}""";
             cursor.execute(consulta)
             resultado = cursor.fetchall()
             return resultado
@@ -35,7 +35,7 @@ class RolRepositorio:
             conexion = pyodbc.connect(Configuracion.strConnection);
             cursor = conexion.cursor();
 
-            consulta = "{CALL proc_select_rol_por_id(?)}"
+            consulta = "{CALL proc_select_rol_por_id(?);}"
             cursor.execute(consulta, rol.GetId())
             resultado = cursor.fetchone();
             return resultado
@@ -47,7 +47,7 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_update_rol(?, ?, @Respuesta)}"
+            consulta = "{CALL proc_update_rol(?, ?, @Respuesta);}"
             cursor.execute(consulta, (rol.GetId(), rol.GetNombre()))
             cursor.execute("SELECT @Respuesta;")
             respuesta = cursor.fetchone()[0]
@@ -62,7 +62,7 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_delete_rol(?, @Respuesta)}"
+            consulta = "{CALL proc_delete_rol(?, @Respuesta);}"
             cursor.execute(consulta, (rol.GetId()))
             cursor.execute("SELECT @Respuesta;")
             codigo = cursor.fetchone()[0]
