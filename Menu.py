@@ -1,7 +1,8 @@
 from Controlador.RolControlador import RolControlador
 import pyodbc;
 from Utilidades.Configuracion import Configuracion
-
+from Controlador.EditorialControlador import EditorialControlador
+editorialControlador = EditorialControlador();
 rolControlador:RolControlador=RolControlador();
 
 class Menu:
@@ -18,6 +19,11 @@ class Menu:
             print("4. Actualizar Rol por ID")
             print("5. Borrar Rol por ID")
             print("7. Salir")
+            print("15. Ingresar Editorial")
+            print("16. Mostrar todas las Editoriales")
+            print("17. Mostrar Editorial por ID")
+            print("18. Actualizar Editorial por ID")
+            print("19. Borrar Editorial por ID")
             opcion = input("Seleccione una opción: ")
 
             if opcion == "0":
@@ -56,6 +62,50 @@ class Menu:
                     print(resultado)
                 except ValueError:
                     print("ID inválido.")
+
+            elif opcion == "5":
+                try:
+                    id = int(input("Ingrese el ID del rol a borrar: "))
+                    resultado = rolControlador.borrarRol(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "15":
+                nombre = input("Ingrese el nombre de la Editorial: ")
+                pais = input("Ingrese el país de la Editorial: ")
+                resultado = editorialControlador.insertarEditorial(nombre, pais)
+                print(resultado)
+
+            elif opcion == "16":
+                resultado = editorialControlador.mostrarTodasLasEditoriales()
+                print(resultado)
+
+            elif opcion == "17":
+                try:
+                    id = int(input("Ingrese el ID de la Editorial: "))
+                    resultado = editorialControlador.mostrarEditorialPorId(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "18":
+                try:
+                    id = int(input("Ingrese el ID de la editorial a actualizar: "))
+                    nombre = input("Ingrese el nuevo nombre de la editorial: ")
+                    pais = input("Ingrese el nuevo país de la editorial: ")
+                    resultado = editorialControlador.actualizarEditorial(id, nombre, pais)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "19":
+                try:
+                    id = int(input("Ingrese el ID de la editorial a borrar: "))
+                    resultado = editorialControlador.borrarEditorial(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")                                      
 
             elif opcion == "7":
                 print("Saliendo del programa...")
@@ -339,7 +389,7 @@ class Menu:
                     END IF;
                 END
                 """
-                # Elimina si existen 
+                # Elimina ptocedimientos de la tabla editorial si existen 
                 """
                 DROP PROCEDURE IF EXISTS proc_insert_editorial;
                 DROP PROCEDURE IF EXISTS proc_select_editorial;
