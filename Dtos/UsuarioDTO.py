@@ -1,4 +1,4 @@
-class Usuario:
+class UsuarioDTO:
     
     def __init__(self, id=None, nombre="", email="", telefono="", direccion="", fechaRegistro=None, rolId=None):
         self.id = id

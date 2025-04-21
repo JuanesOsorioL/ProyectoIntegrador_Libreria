@@ -7,7 +7,7 @@ rolServicio:RolServicio=RolServicio();
 class RolControlador:
     
     def insertarRol(self, nombre: str) -> Respuesta:
-        rolDTO = RolDTO(id=None, nombre=nombre)
+        rolDTO = RolDTO(None, nombre)
         return rolServicio.insertarRol(rolDTO)
     
     def mostrarTodosLosRoles(self) -> Respuesta:

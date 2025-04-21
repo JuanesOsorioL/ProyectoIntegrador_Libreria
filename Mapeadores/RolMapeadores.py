@@ -1,6 +1,6 @@
 from Entidades.Rol import Rol
 from Dtos.RolDTO import RolDTO
-
+#Rol
 def rol_a_dto(rol: Rol) -> RolDTO:
     return RolDTO(id=rol.id, nombre=rol.nombre)
 
