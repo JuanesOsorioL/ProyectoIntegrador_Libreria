@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS devoluciones (
 );
 
 --Insertar
-DELIMITER //
+DELIMITER 
 CREATE PROCEDURE proc_insert_devolucion (
     IN p_fecha DATE,
     IN p_estado VARCHAR(50),
@@ -124,31 +124,31 @@ BEGIN
     SET p_NuevoId = LAST_INSERT_ID();
     SET p_Respuesta = 1;
 END;
-//
+
 DELIMITER ;
 
 --Mostrar
-DELIMITER //
+DELIMITER 
 CREATE PROCEDURE proc_select_devolucion()
 BEGIN
     SELECT * FROM devoluciones;
 END;
-//
+
 DELIMITER ;
 
 --Mostrar por ID
-DELIMITER //
+DELIMITER
 CREATE PROCEDURE proc_select_devolucion_por_id (
     IN p_id INT
 )
 BEGIN
     SELECT * FROM devoluciones WHERE id = p_id;
 END;
-//
+
 DELIMITER ;
 
 --Actualizar
-DELIMITER //
+DELIMITER 
 CREATE PROCEDURE proc_update_devolucion (
     IN p_id INT,
     IN p_fecha DATE,
@@ -174,11 +174,11 @@ BEGIN
         SET Respuesta = 2; -- No se encontró
     END IF;
 END;
-//
+
 DELIMITER ;
 
 --Eliminar
-DELIMITER //
+DELIMITER
 CREATE PROCEDURE proc_delete_devolucion (
     IN p_id INT,
     OUT Respuesta INT
@@ -192,7 +192,7 @@ BEGIN
         SET Respuesta = 2;
     END IF;
 END;
-//
+
 DELIMITER ;
 
 

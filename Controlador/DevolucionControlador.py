@@ -8,6 +8,7 @@ class DevolucionControlador:
 
     def insertarDevolucion(self, fecha: str, estado: str, observaciones: str) -> Respuesta:
         dto = DevolucionDTO(fecha_real_devolucion=fecha, estado_libro=estado, observaciones=observaciones)
+        print(str(dto))
         return devolucionServicio.insertarDevolucion(dto)
 
     def mostrarTodasLasDevoluciones(self) -> Respuesta:
