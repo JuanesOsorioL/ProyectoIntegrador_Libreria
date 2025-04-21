@@ -62,15 +62,7 @@ class Menu:
                     print(resultado)
                 except ValueError:
                     print("ID inválido.")
-
-            elif opcion == "5":
-                try:
-                    id = int(input("Ingrese el ID del rol a borrar: "))
-                    resultado = rolControlador.borrarRol(id)
-                    print(resultado)
-                except ValueError:
-                    print("ID inválido.")
-
+            
             elif opcion == "15":
                 nombre = input("Ingrese el nombre de la Editorial: ")
                 pais = input("Ingrese el país de la Editorial: ")
@@ -115,161 +107,6 @@ class Menu:
         
 
 
-  
-        try:
-            conexion = pyodbc.connect(Configuracion.strConnection)
-            cursor = conexion.cursor()
-            
-            query = """
-                CREATE TABLE roles (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(50) NOT NULL
-            );
-
-            CREATE TABLE editoriales (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            nombre VARCHAR(100) NOT NULL,
-            pais VARCHAR(50)
-            );
-
-            CREATE TABLE autores (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                nombre VARCHAR(100) NOT NULL,
-                nacionalidad VARCHAR(50)
-            );
-
-            CREATE TABLE categorias (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                nombre VARCHAR(50) NOT NULL
-            );
-
-            CREATE TABLE libros (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                titulo VARCHAR(150) NOT NULL,
-                isbn VARCHAR(20) UNIQUE,
-                descripcion TEXT,
-                anio_publicacion YEAR,
-                formato ENUM('Físico', 'Digital'),
-                editorial_id INT,
-                precio DECIMAL(10,2),
-                stock INT,
-                FOREIGN KEY (editorial_id) REFERENCES editoriales(id)
-            );
-
-            CREATE TABLE libro_autor (
-                libro_id INT,
-                autor_id INT,
-                PRIMARY KEY (libro_id, autor_id),
-                FOREIGN KEY (libro_id) REFERENCES libros(id),
-                FOREIGN KEY (autor_id) REFERENCES autores(id)
-            );
-
-            CREATE TABLE libro_categoria (
-                libro_id INT,
-                categoria_id INT,
-                PRIMARY KEY (libro_id, categoria_id),
-                FOREIGN KEY (libro_id) REFERENCES libros(id),
-                FOREIGN KEY (categoria_id) REFERENCES categorias(id)
-            );
-
-            --- PROCEDIMIENTOS ALMACENADOS ---
-
-            --insertar rol
-            DELIMITER $$
-            CREATE PROCEDURE `libreria`.`proc_insert_rol`(
-                IN p_Nombre VARCHAR(50),
-                OUT p_NuevoId INT,
-                OUT p_Respuesta INT
-            )
-            BEGIN
-                IF EXISTS (SELECT 1 FROM Libreria.roles WHERE Nombre = p_Nombre) THEN
-                    SET p_Respuesta = 2;
-                    SET p_NuevoId = NULL;
-                ELSE
-                    INSERT INTO Libreria.roles (Nombre) VALUES (p_Nombre);
-                    SET p_NuevoId = LAST_INSERT_ID();
-                    SET p_Respuesta = 1;
-                END IF;
-            END$$
-            DELIMITER ;
-
-            --mostrar todos los roles
-            DELIMITER $$
-            CREATE PROCEDURE `Libreria`.`proc_select_rol`(
-                INOUT p_Respuesta INT
-            )
-            BEGIN
-                SELECT id, Nombre FROM Libreria.roles;
-                SET p_Respuesta = 1;
-            END$$
-            DELIMITER ;
-
-            --buscar rol por id
-            DELIMITER $$
-            CREATE PROCEDURE `proc_select_rol_por_id` (
-                IN p_id INT
-            )
-            BEGIN
-                SELECT 
-                    id,
-                    Nombre
-                FROM 
-                    Libreria.roles
-                WHERE 
-                    id = p_id;
-            END$$
-            DELIMITER ;
-
-            --actualizar rol
-            DELIMITER $$
-            CREATE PROCEDURE `libreria`.`proc_update_rol`(
-                IN p_Id INT,
-                IN p_Nombre VARCHAR(50),
-                INOUT p_Respuesta INT
-            )
-            BEGIN
-                IF EXISTS (SELECT 1 FROM Libreria.roles WHERE id = p_Id) THEN
-                    UPDATE Libreria.roles
-                    SET Nombre = p_Nombre
-                    WHERE id = p_Id;
-
-                    SET p_Respuesta = 1;
-                ELSE
-                    SET p_Respuesta = 2;
-                END IF;
-            END$$
-            DELIMITER ;
-
-            --borrar rol
-            DELIMITER $$
-            CREATE PROCEDURE `proc_delete_rol`(
-                IN p_id INT,
-                INOUT p_Respuesta INT
-            )
-            BEGIN
-                IF EXISTS (SELECT 1 FROM Libreria.roles WHERE id = p_id) THEN
-                    DELETE FROM Libreria.roles WHERE id = p_id;
-                    SET p_Respuesta = 1;
-                ELSE
-                    SET p_Respuesta = 2;
-                END IF;
-            END$$
-            DELIMITER ;
-            """
-            
-            cursor.execute(query)
-            conexion.commit()
-            print("Tabla 'roles' creada exitosamente.")
-    
-        except Exception as e:
-            if "1050" in str(e):
-                print("La tabla 'roles' ya existe.")
-            else:
-                print("Ocurrió un error al crear la tabla:", e)
-            
-        finally:
-                cursor.close()
-                conexion.close()
 
     def crear_tablas_y_procedimientos():
         try:
@@ -290,6 +127,51 @@ class Menu:
                     nombre VARCHAR(100) NOT NULL,
                     pais VARCHAR(50)
                 )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS autores (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    nombre VARCHAR(100) NOT NULL,
+                    nacionalidad VARCHAR(50)
+                )
+                """,
+                """
+                CREATE TABLE categorias (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    nombre VARCHAR(50) NOT NULL
+                )
+                """,
+                """
+                CREATE TABLE libros (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    titulo VARCHAR(150) NOT NULL,
+                    isbn VARCHAR(20) UNIQUE,
+                    descripcion TEXT,
+                    anio_publicacion YEAR,
+                    formato ENUM('Físico', 'Digital'),
+                    editorial_id INT,
+                    precio DECIMAL(10,2),
+                    stock INT,
+                    FOREIGN KEY (editorial_id) REFERENCES editoriales(id)
+                )
+                """,
+                """
+                CREATE TABLE libro_autor (
+                    libro_id INT,
+                    autor_id INT,
+                    PRIMARY KEY (libro_id, autor_id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id),
+                    FOREIGN KEY (autor_id) REFERENCES autores(id)
+                )
+                """,
+                """
+                CREATE TABLE libro_categoria (
+                    libro_id INT,
+                    categoria_id INT,
+                    PRIMARY KEY (libro_id, categoria_id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id),
+                    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+                )
                 """
             ]
 
@@ -297,6 +179,8 @@ class Menu:
                 cursor.execute(sql)
 
             print("Tablas creadas correctamente.")
+
+        
 
             # --- Crear procedimientos almacenados ---
             procedimientos = [
