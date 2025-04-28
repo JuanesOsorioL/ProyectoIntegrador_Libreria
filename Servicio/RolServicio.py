@@ -51,10 +51,7 @@ class RolServicio:
             lista=repositorio.MostrarTodosLosRoles();
 
             for roles in lista:
-                rol = Rol(
-                    id=roles[0],
-                    nombre=roles[1]
-                )
+                rol=fila_a_rol(roles)
                 listaRolDTO.append(rol_a_dto(rol));
             
             if listaRolDTO:

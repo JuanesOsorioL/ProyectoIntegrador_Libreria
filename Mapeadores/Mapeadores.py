@@ -18,6 +18,7 @@ def dto_a_rol(rol_dto: RolDTO) -> Rol:
 def fila_a_rol(fila: tuple) -> Rol:
     return Rol(id=fila[0], nombre=fila[1])
 
+
 """Mapeador Editorial"""
 
 def editorial_a_dto(editorial: Editorial) -> EditorialDTO:

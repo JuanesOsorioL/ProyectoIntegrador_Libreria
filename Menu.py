@@ -649,8 +649,6 @@ def crear_tablas_y_procedimientos():
 
 
 
-
-
 if __name__ == "__main__":
     menu = Menu()
     menu.mostrar_menu()
