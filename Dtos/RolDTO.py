@@ -20,3 +20,6 @@ class RolDTO:
 
     def __str__(self) -> str:
         return f"Id='{self.id}', Nombre={self.nombre}"
+    
+    def mostrar(self) -> str:
+        return f"{self.id} : {self.nombre}"

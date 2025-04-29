@@ -12,6 +12,9 @@ class RolControlador:
     
     def mostrarTodosLosRoles(self) -> Respuesta:
         return rolServicio.MostrarTodosLosRoles()
+    
+    def mostrarTodosLosRolesSeleccionar(self) -> list:
+        return rolServicio.MostrarTodosLosRolesSeleccionar()
 
     def mostrarRolPorId(self, id:int) -> Respuesta:
         rolDTO = RolDTO(id=id, nombre="")

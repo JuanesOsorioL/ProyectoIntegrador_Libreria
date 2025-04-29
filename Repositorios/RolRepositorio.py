@@ -25,7 +25,6 @@ class RolRepositorio:
             consulta: str = """{CALL proc_select_rol(@p_Respuesta);}""";
             cursor.execute(consulta)
             resultado = cursor.fetchall()
-            print(resultado)
             return resultado
         finally:
             cursor.close()

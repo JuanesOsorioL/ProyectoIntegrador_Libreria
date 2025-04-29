@@ -22,8 +22,8 @@ class UsuarioServicio:
                 usuario_insertado.Set_Id(nuevo_id)
                 fila = repositorio.mostrar_Usuario_por_id(usuario_insertado)
                 if fila:
-                    dto_resultado = usuario_a_dto(fila_a_usuario(fila))
-                    return Respuesta("Operación Exitosa", "Usuario registrado", [str(dto_resultado)])
+                    usuarioDto = usuario_a_dto(fila_a_usuario(fila))
+                    return Respuesta("Operación Exitosa", "Usuario registrado", usuarioDto)
                 else:
                     return Respuesta("Operación Fallida", "Usuario no encontrado luego de insertar", [])
             elif codigo == YA_EXISTE:

@@ -49,6 +49,26 @@ class RolServicio:
                 return Respuesta("Operación Exitosa","No existen roles guardados",[])
         except Exception as ex:
             return Respuesta("Error Sistema",f"Error al obtener roles: {str(ex)}",[])
+        
+
+
+
+    def MostrarTodosLosRolesSeleccionar(self) -> list:
+        try:
+            listaRolDTO = [];
+            lista=repositorio.MostrarTodosLosRoles();
+
+            for roles in lista:
+                rol = Rol(
+                    id=roles[0],
+                    nombre=roles[1]
+                )
+                listaRolDTO.append(rol_a_dto(rol));
+            
+            return listaRolDTO
+        except Exception as ex:
+            return listaRolDTO
+
 
 
     def MostrarRolPorId(self, rolDTO: RolDTO) -> Respuesta:

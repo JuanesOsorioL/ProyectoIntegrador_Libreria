@@ -1,14 +1,30 @@
 from Controlador.RolControlador import RolControlador
 from Controlador.UsuarioControlador import UsuarioControlador
+from Controlador.UsuarioSistemaControlador import UsuarioSistemaControlador
 import pyodbc;
 import os
 from datetime import datetime
 from Utilidades.Configuracion import Configuracion
+from Dtos.UsuarioDTO import UsuarioDTO
+from Dtos.Generico.Respuesta import Respuesta
 
 rolControlador = RolControlador();
 usuarioControlador = UsuarioControlador()
+usuarioSistemaControlador = UsuarioSistemaControlador()
 
 class Menu:
+
+    def menu_Inicial():
+        print("\nBienvenido a tu libreria de confianza")
+        print("\nQue deseas hacer?")
+        print("0. Creacion de tablas")
+        print("1. Registrar")
+        print("2. Login")
+        print("3. Salir")
+        opcion = input("Seleccione una opción: ")
+        return opcion
+
+
 
     def menu():
         print("\nMenú de Opciones:")
@@ -28,8 +44,88 @@ class Menu:
         print("13. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
+    
 
 
+    def mostrar_menu(self):
+        os.system('cls')
+
+        while True:
+            
+            opcion = Menu.menu_Inicial()
+            match opcion:
+
+                case "0":
+                    os.system('cls')
+                    Menu.crear_tablas_y_procedimientos()
+
+                case "1":
+                    os.system('cls')
+                    try:
+                        
+                        nombre = str(input("Nombre: "))
+                        email = str(input("Email: "))
+                        telefono = input("Teléfono: ")
+                        direccion = input("Dirección: ")
+                        fecha_input = input("Fecha de registro (YYYY-MM-DD): ")
+
+                        try:
+                            fecha_obj = datetime.strptime(fecha_input, "%Y-%m-%d").date()
+                            fecha_formateada = fecha_obj.strftime("%Y-%m-%d")
+                        except ValueError:
+                            print("Fecha inválida. Debe estar en formato YYYY-MM-DD.")
+                            continue
+
+                        resultado=rolControlador.mostrarTodosLosRolesSeleccionar()
+                        rol_id=Menu.seleccionar_Un_Rol_valido(resultado)
+                        print(rol_id)
+                        resultado = usuarioControlador.insertarUsuario(nombre, email, telefono, direccion, fecha_formateada, rol_id)
+
+                        usuarioDto = resultado.get_resultado()  
+                        Usuario_id = usuarioDto.Get_Id()
+                        Usuario = input("Usuario: ")
+                        contrasena = input("Contraseña: ")
+
+                        resultado_registrado=usuarioSistemaControlador.insertar(Usuario_id,Usuario,contrasena)
+
+                        print(resultado,resultado_registrado)
+                    except Exception as ex:
+                        print(f"Error al ingresar usuario: {ex}")
+
+                case "2":
+                    os.system('cls')
+                case "3":
+                    os.system('cls')
+    
+
+    def seleccionar_Un_Rol_valido(resultado)-> int:
+        ids_validos = [rol.id for rol in resultado]          
+        while True:
+
+            for roldto in resultado:
+                print(roldto.mostrar())
+
+            entrada = input("ID del rol asociado: ")
+
+            try:
+                rol_id = int(entrada)
+            except ValueError:
+                print("Debes ingresar un número entero.")
+                continue
+
+            if rol_id not in ids_validos:
+                print(f"El ID {rol_id} no está en la lista. Elige uno de los mostrados.")
+                continue
+            
+            return entrada
+
+
+
+
+
+
+
+    """ 
     def mostrar_menu(self):
         os.system('cls')
 
@@ -163,7 +259,7 @@ class Menu:
                 break
             else:
                 print("Opción no válida, intente de nuevo.")
-        
+        """        
 
 
     def crear_tablas_y_procedimientos():
@@ -528,7 +624,39 @@ class Menu:
                     FROM usuarios
                     WHERE rol_id = p_rol_id;
                 END
+                """,
+
                 """
+                CREATE PROCEDURE proc_insert_usuarios_sistema(
+                    IN p_usuario_id INT,
+                    IN p_username VARCHAR(50),
+                    IN p_password_hash VARCHAR(255),
+                    OUT p_nuevo_id INT,
+                    OUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE username = p_username) THEN
+                        SET p_respuesta = 2;
+                        SET p_nuevo_id = NULL;
+                    ELSE
+                        INSERT INTO usuarios_sistema (usuario_id, username, password_hash)
+                        VALUES (p_usuario_id, p_username, p_password_hash);
+                        SET p_nuevo_id = LAST_INSERT_ID();
+                        SET p_respuesta = 1;
+                    END IF;
+                END
+                """,
+                """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_id(IN p_id INT)
+                BEGIN
+                    SELECT id, usuario_id, username, password_hash
+                    FROM usuarios_sistema
+                    WHERE id = p_id;
+                END
+                """
+
+
+
             ]
 
             for proc in procedimientos:
