@@ -30,8 +30,3 @@ class EditorialDTO:
     def __str__(self) -> str:
         return f"Id='{self.id}', Nombre='{self.nombre}', País='{self.pais}'"
 
-    @staticmethod
-    def mostrarTodasLasEditoriales(lista): 
-        """ Método estático para imprimir una lista de editoriales DTO. """
-        for editorial in lista:
-            print(editorial)

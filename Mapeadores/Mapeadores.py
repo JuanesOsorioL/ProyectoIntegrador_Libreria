@@ -4,6 +4,9 @@ from Dtos.RolDTO import RolDTO
 from Entidades.Editorial import Editorial
 from Dtos.EditorialDTO import EditorialDTO
 
+from Entidades.Autor import Autor
+from Dtos.AutorDTO import AutorDTO
+
 from Entidades.Devolucion import Devolucion
 from Dtos.DevolucionDTO import DevolucionDTO
 
@@ -32,6 +35,18 @@ def fila_a_editorial(fila: tuple) -> Editorial:
     """Convierte una fila de la base de datos (tupla) en una entidad Editorial."""
     return Editorial(id=fila[0], nombre=fila[1], pais=fila[2])
 
+"""Mapeador Autor"""
+
+def autor_a_dto(autor: Autor) -> AutorDTO:
+    return AutorDTO(id=autor.id, nombre=autor.nombre, nacionalidad=autor.nacionalidad)
+
+def dto_a_autor(autor_dto: AutorDTO) -> Autor:
+    return Autor(id=autor_dto.id, nombre=autor_dto.nombre, nacionalidad=autor_dto.nacionalidad)
+
+def fila_a_autor(fila: tuple) -> Autor:
+    return Autor(id=fila[0], nombre=fila[1], nacionalidad=fila[2])
+
+"""Mapeador Devolucion"""
 
 def devolucion_a_dto(dev: Devolucion) -> DevolucionDTO:
     return DevolucionDTO(
