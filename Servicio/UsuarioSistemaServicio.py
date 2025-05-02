@@ -7,14 +7,32 @@ from Mapeadores.UsuarioSistemaMapeadores import (
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.UsuarioSistemaRepositorio import UsuarioSistemaRepositorio
 
+from Cifrados.MD5 import MD5
+from Cifrados.AESHMAC import AESHMAC
+import msgpack
+md5=MD5()
+aeshmac=AESHMAC()
 repositorio = UsuarioSistemaRepositorio()
+
 EXITO = 1
 YA_EXISTE = 2
 
 class UsuarioSistemaServicio:
 
     def insertar(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        contrasenaCifrada,salt=md5.encrypt(dto.get_contrasena())
+        ct,nonce,tag=aeshmac.encrypt(dto.get_username())
+        username_hmac_value = aeshmac.hmac(dto.get_username())
+        packed = msgpack.packb({
+            "nonce": nonce,
+            "tag":   tag,
+            "ct":    ct
+        })
+
         entidad = dto_a_usuario_sistema(dto)
+        entidad.set_salt(salt)
+        entidad.Set_contrasena(contrasenaCifrada)
+
         nuevo_id, estado = repositorio.insertar(entidad)
 
         if estado == EXITO:

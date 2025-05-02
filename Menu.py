@@ -14,17 +14,26 @@ usuarioSistemaControlador = UsuarioSistemaControlador()
 
 class Menu:
 
-    def menu_Inicial():
-        print("\nBienvenido a tu libreria de confianza")
-        print("\nQue deseas hacer?")
-        print("0. Creacion de tablas")
-        print("1. Registrar")
-        print("2. Login")
-        print("3. Salir")
-        opcion = input("Seleccione una opción: ")
-        return opcion
+    def seleccionar_Un_Rol_valido(resultado)-> int:
+        ids_validos = [rol.id for rol in resultado]          
+        while True:
 
+            for roldto in resultado:
+                print(roldto.mostrar())
 
+            entrada = input("ID del rol asociado: ")
+
+            try:
+                rol_id = int(entrada)
+            except ValueError:
+                print("Debes ingresar un número entero.")
+                continue
+
+            if rol_id not in ids_validos:
+                print(f"El ID {rol_id} no está en la lista. Elige uno de los mostrados.")
+                continue
+            
+            return entrada
 
     def menu():
         print("\nMenú de Opciones:")
@@ -44,7 +53,17 @@ class Menu:
         print("13. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
-    
+     
+
+    def menu_Inicial():
+        print("\nBienvenido a tu libreria de confianza")
+        print("\nQue deseas hacer?")
+        print("0. Creacion de tablas")
+        print("1. Registrar")
+        print("2. Login")
+        print("3. Salir")
+        opcion = input("Seleccione una opción: ")
+        return opcion
 
 
     def mostrar_menu(self):
@@ -98,26 +117,7 @@ class Menu:
                     os.system('cls')
     
 
-    def seleccionar_Un_Rol_valido(resultado)-> int:
-        ids_validos = [rol.id for rol in resultado]          
-        while True:
 
-            for roldto in resultado:
-                print(roldto.mostrar())
-
-            entrada = input("ID del rol asociado: ")
-
-            try:
-                rol_id = int(entrada)
-            except ValueError:
-                print("Debes ingresar un número entero.")
-                continue
-
-            if rol_id not in ids_validos:
-                print(f"El ID {rol_id} no está en la lista. Elige uno de los mostrados.")
-                continue
-            
-            return entrada
 
 
 
@@ -342,9 +342,11 @@ class Menu:
                 """
                 CREATE TABLE IF NOT EXISTS usuarios_sistema (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    usuario_id INT NOT NULL,
-                    username VARCHAR(50) UNIQUE NOT NULL,
-                    password_hash VARCHAR(255) NOT NULL,
+                    usuario_id INT,
+                    username JSON NOT NULL,
+                    contrasena VARCHAR(32) NOT NULL,
+                    rol_id INT,
+                    salt VARCHAR(32) NOT NULL,
                     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                 )
                 """,
@@ -627,35 +629,138 @@ class Menu:
                 """,
 
                 """
-                CREATE PROCEDURE proc_insert_usuarios_sistema(
-                    IN p_usuario_id INT,
-                    IN p_username VARCHAR(50),
-                    IN p_password_hash VARCHAR(255),
-                    OUT p_nuevo_id INT,
-                    OUT p_respuesta INT
+                CREATE PROCEDURE proc_delete_usuarios_sistema(
+                    IN    p_id        INT,
+                    INOUT p_respuesta INT
                 )
                 BEGIN
-                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE username = p_username) THEN
-                        SET p_respuesta = 2;
-                        SET p_nuevo_id = NULL;
+                    IF EXISTS (
+                        SELECT 1
+                        FROM usuarios_sistema
+                        WHERE id = p_id
+                    ) THEN
+                        DELETE FROM usuarios_sistema
+                        WHERE id = p_id;
+                        SET p_respuesta = 1;    -- eliminado
                     ELSE
-                        INSERT INTO usuarios_sistema (usuario_id, username, password_hash)
-                        VALUES (p_usuario_id, p_username, p_password_hash);
-                        SET p_nuevo_id = LAST_INSERT_ID();
-                        SET p_respuesta = 1;
+                        SET p_respuesta = 2;    -- no existe
                     END IF;
                 END
                 """,
+
                 """
-                CREATE PROCEDURE proc_select_usuarios_sistema_por_id(IN p_id INT)
+                CREATE PROCEDURE proc_update_usuarios_sistema(
+                    IN     p_id                 INT,
+                    IN     p_usuario_id         INT,
+                    IN     p_username_payload   BLOB,
+                    IN     p_username_hmac      CHAR(64),
+                    IN     p_contrasena         VARCHAR(32),
+                    IN     p_rol_id             INT,
+                    IN     p_salt               VARCHAR(32),
+                    INOUT  p_respuesta          INT
+                )
                 BEGIN
-                    SELECT id, usuario_id, username, password_hash
+                    IF EXISTS (
+                        SELECT 1
+                        FROM usuarios_sistema
+                        WHERE id = p_id
+                    ) THEN
+                        UPDATE usuarios_sistema
+                        SET usuario_id       = p_usuario_id,
+                            username_payload = p_username_payload,
+                            username_hmac    = p_username_hmac,
+                            contrasena       = p_contrasena,
+                            rol_id           = p_rol_id,
+                            salt             = p_salt
+                        WHERE id = p_id;
+                        SET p_respuesta = 1;    -- actualizado
+                    ELSE
+                        SET p_respuesta = 2;    -- no existe el id
+                    END IF;
+                END
+                """,
+
+                """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
+                IN p_username_hmac CHAR(64)
+                )
+                BEGIN
+                    SELECT
+                        id,
+                        usuario_id,
+                        username_payload,
+                        username_hmac,
+                        contrasena,
+                        rol_id,
+                        salt
+                    FROM usuarios_sistema
+                    WHERE username_hmac = p_username_hmac;
+                END
+                """,
+
+                """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_id(
+                IN p_id INT
+                )
+                BEGIN
+                    SELECT
+                        id,
+                        usuario_id,
+                        username_payload,
+                        username_hmac,
+                        contrasena,
+                        rol_id,
+                        salt
                     FROM usuarios_sistema
                     WHERE id = p_id;
                 END
+                """,
+
                 """
+                CREATE PROCEDURE proc_select_usuarios_sistema()
+                BEGIN
+                    SELECT
+                        id,
+                        usuario_id,
+                        username_payload,
+                        username_hmac,
+                        contrasena,
+                        rol_id,
+                        salt
+                    FROM usuarios_sistema;
+                END
+                """,
 
+                """
+                CREATE PROCEDURE proc_insert_usuarios_sistema(
+                    IN  p_usuario_id         INT,
+                    IN  p_username_payload   BLOB,
+                    IN  p_username_hmac      CHAR(64),
+                    IN  p_contrasena         VARCHAR(32),
+                    IN  p_rol_id             INT,
+                    IN  p_salt               VARCHAR(32),
+                    OUT p_nuevo_id           INT,
+                    OUT p_respuesta          INT
+                )
+                BEGIN
 
+                    IF EXISTS (
+                        SELECT 1
+                        FROM usuarios_sistema
+                        WHERE username_hmac = p_username_hmac
+                    ) THEN
+                        SET p_respuesta = 2;
+                        SET p_nuevo_id  = NULL;
+                    ELSE
+                        INSERT INTO usuarios_sistema
+                            (usuario_id, username_payload, username_hmac, contrasena, rol_id, salt)
+                        VALUES
+                            (p_usuario_id, p_username_payload, p_username_hmac, p_contrasena, p_rol_id, p_salt);
+                        SET p_nuevo_id  = LAST_INSERT_ID();
+                        SET p_respuesta = 1;
+                    END IF;
+                END
+                """
 
             ]
 

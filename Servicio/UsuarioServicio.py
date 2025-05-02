@@ -4,6 +4,9 @@ from Mapeadores.UsuarioMapeadores import usuario_a_dto, dto_a_usuario, fila_a_us
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.UsuarioRepositorio import UsuarioRepositorio
 
+from Cifrados.MD5 import MD5
+
+md5=MD5()
 repositorio = UsuarioRepositorio()
 
 EXITO = 1

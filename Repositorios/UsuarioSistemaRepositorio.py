@@ -7,8 +7,8 @@ class UsuarioSistemaRepositorio:
     def insertar(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        consulta = "{CALL proc_insert_usuarios_sistema(?, ?, ?, @p_nuevo_id, @p_respuesta)}"
-        cursor.execute(consulta, usuario.Get_UsuarioId(), usuario.Get_Username(), usuario.Get_PasswordHash())
+        consulta = "{CALL proc_insert_usuarios_sistema(?,?,?,?, @p_nuevo_id, @p_respuesta)}"
+        cursor.execute(consulta, usuario.Get_UsuarioId(), usuario.Get_Username(), usuario.Get_contrasena(),usuario.get_salt())
         cursor.execute("SELECT @p_nuevo_id, @p_respuesta")
         resultado = cursor.fetchone()
         conexion.commit()

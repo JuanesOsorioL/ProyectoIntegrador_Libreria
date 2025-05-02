@@ -158,100 +158,200 @@ DELIMITER ;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 -- Tabla usuarios_sistema (login)
 CREATE TABLE IF NOT EXISTS usuarios_sistema (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    username_payload BLOB NOT NULL,
+    username_hmac CHAR(64) NOT NULL UNIQUE,
+    contrasena VARCHAR(32) NOT NULL,
+    rol_id INT,
+    salt VARCHAR(32) NOT NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
--- insertar
+
+-- ============================================
+-- 1) Insertar nuevo registro con payload MsgPack + HMAC
+-- ============================================
 DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_insert_usuarios_sistema $$
 CREATE PROCEDURE proc_insert_usuarios_sistema(
-    IN p_usuario_id INT,
-    IN p_username VARCHAR(50),
-    IN p_password_hash VARCHAR(255),
-    OUT p_nuevo_id INT,
-    OUT p_respuesta INT
+    IN  p_usuario_id         INT,
+    IN  p_username_payload   BLOB,
+    IN  p_username_hmac      CHAR(64),
+    IN  p_contrasena         VARCHAR(32),
+    IN  p_rol_id             INT,
+    IN  p_salt               VARCHAR(32),
+    OUT p_nuevo_id           INT,
+    OUT p_respuesta          INT
 )
 BEGIN
-    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE username = p_username) THEN
+
+    IF EXISTS (
+        SELECT 1
+          FROM usuarios_sistema
+         WHERE username_hmac = p_username_hmac
+    ) THEN
         SET p_respuesta = 2;
-        SET p_nuevo_id = NULL;
+        SET p_nuevo_id  = NULL;
     ELSE
-        INSERT INTO usuarios_sistema (usuario_id, username, password_hash)
-        VALUES (p_usuario_id, p_username, p_password_hash);
-        SET p_nuevo_id = LAST_INSERT_ID();
+        INSERT INTO usuarios_sistema
+            (usuario_id, username_payload, username_hmac, contrasena, rol_id, salt)
+        VALUES
+            (p_usuario_id, p_username_payload, p_username_hmac, p_contrasena, p_rol_id, p_salt);
+        SET p_nuevo_id  = LAST_INSERT_ID();
         SET p_respuesta = 1;
     END IF;
-END$$
+END $$
 DELIMITER ;
 
--- mostrar todos
+
+
+-- ============================================
+-- 2) Listar todos los registros
+-- ============================================
 DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_select_usuarios_sistema $$
 CREATE PROCEDURE proc_select_usuarios_sistema()
 BEGIN
-    SELECT id, usuario_id, username, password_hash FROM usuarios_sistema;
-END$$
+    SELECT
+        id,
+        usuario_id,
+        username_payload,
+        username_hmac,
+        contrasena,
+        rol_id,
+        salt
+      FROM usuarios_sistema;
+END $$
 DELIMITER ;
 
--- por ID
+
+
+-- ============================================
+-- 3) Consultar por ID
+-- ============================================
 DELIMITER $$
-CREATE PROCEDURE proc_select_usuarios_sistema_por_id(IN p_id INT)
+DROP PROCEDURE IF EXISTS proc_select_usuarios_sistema_por_id $$
+CREATE PROCEDURE proc_select_usuarios_sistema_por_id(
+    IN p_id INT
+)
 BEGIN
-    SELECT id, usuario_id, username, password_hash
-    FROM usuarios_sistema
-    WHERE id = p_id;
-END$$
+    SELECT
+        id,
+        usuario_id,
+        username_payload,
+        username_hmac,
+        contrasena,
+        rol_id,
+        salt
+      FROM usuarios_sistema
+     WHERE id = p_id;
+END $$
 DELIMITER ;
 
--- por username
+
+
+-- ============================================
+-- 4) Consultar por HMAC (indicador único)
+-- ============================================
 DELIMITER $$
-CREATE PROCEDURE proc_select_usuarios_sistema_por_username(IN p_username VARCHAR(50))
+DROP PROCEDURE IF EXISTS proc_select_usuarios_sistema_por_hmac $$
+CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
+    IN p_username_hmac CHAR(64)
+)
 BEGIN
-    SELECT id, usuario_id, username, password_hash
-    FROM usuarios_sistema
-    WHERE username = p_username;
-END$$
+    SELECT
+        id,
+        usuario_id,
+        username_payload,
+        username_hmac,
+        contrasena,
+        rol_id,
+        salt
+      FROM usuarios_sistema
+     WHERE username_hmac = p_username_hmac;
+END $$
 DELIMITER ;
 
--- actualizar
+
+
+-- ============================================
+-- 5) Actualizar un registro existente
+-- ============================================
 DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_update_usuarios_sistema $$
 CREATE PROCEDURE proc_update_usuarios_sistema(
-    IN p_id INT,
-    IN p_usuario_id INT,
-    IN p_username VARCHAR(50),
-    IN p_password_hash VARCHAR(255),
+    IN     p_id                 INT,
+    IN     p_usuario_id         INT,
+    IN     p_username_payload   BLOB,
+    IN     p_username_hmac      CHAR(64),
+    IN     p_contrasena         VARCHAR(32),
+    IN     p_rol_id             INT,
+    IN     p_salt               VARCHAR(32),
+    INOUT  p_respuesta          INT
+)
+BEGIN
+    IF EXISTS (
+        SELECT 1
+          FROM usuarios_sistema
+         WHERE id = p_id
+    ) THEN
+        UPDATE usuarios_sistema
+           SET usuario_id       = p_usuario_id,
+               username_payload = p_username_payload,
+               username_hmac    = p_username_hmac,
+               contrasena       = p_contrasena,
+               rol_id           = p_rol_id,
+               salt             = p_salt
+         WHERE id = p_id;
+        SET p_respuesta = 1;    -- actualizado
+    ELSE
+        SET p_respuesta = 2;    -- no existe el id
+    END IF;
+END $$
+DELIMITER ;
+
+
+
+-- ============================================
+-- 6) Eliminar un registro
+-- ============================================
+DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_delete_usuarios_sistema $$
+CREATE PROCEDURE proc_delete_usuarios_sistema(
+    IN    p_id        INT,
     INOUT p_respuesta INT
 )
 BEGIN
-    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE id = p_id) THEN
-        UPDATE usuarios_sistema
-        SET usuario_id = p_usuario_id,
-            username = p_username,
-            password_hash = p_password_hash
-        WHERE id = p_id;
-        SET p_respuesta = 1;
+    IF EXISTS (
+        SELECT 1
+          FROM usuarios_sistema
+         WHERE id = p_id
+    ) THEN
+        DELETE FROM usuarios_sistema
+         WHERE id = p_id;
+        SET p_respuesta = 1;    -- eliminado
     ELSE
-        SET p_respuesta = 2;
+        SET p_respuesta = 2;    -- no existe
     END IF;
-END$$
+END $$
 DELIMITER ;
 
--- eliminar
-DELIMITER $$
-CREATE PROCEDURE proc_delete_usuarios_sistema(IN p_id INT, INOUT p_respuesta INT)
-BEGIN
-    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE id = p_id) THEN
-        DELETE FROM usuarios_sistema WHERE id = p_id;
-        SET p_respuesta = 1;
-    ELSE
-        SET p_respuesta = 2;
-    END IF;
-END$$
-DELIMITER ;
+
+
 
 
 

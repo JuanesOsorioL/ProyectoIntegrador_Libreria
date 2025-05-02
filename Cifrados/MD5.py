@@ -2,7 +2,7 @@ import os, binascii, hashlib
 
 class MD5:
 
-    def cifrar(self, password_plano: str)-> tuple:
+    def encrypt(self, password_plano: str)-> tuple:
 
         salt_bytes = os.urandom(16)
         salt   = binascii.hexlify(salt_bytes).decode()
