@@ -7,6 +7,9 @@ from Dtos.EditorialDTO import EditorialDTO
 from Entidades.Autor import Autor
 from Dtos.AutorDTO import AutorDTO
 
+from Entidades.Categoria import Categoria
+from Dtos.CategoriaDTO import CategoriaDTO
+
 from Entidades.Devolucion import Devolucion
 from Dtos.DevolucionDTO import DevolucionDTO
 
@@ -45,6 +48,17 @@ def dto_a_autor(autor_dto: AutorDTO) -> Autor:
 
 def fila_a_autor(fila: tuple) -> Autor:
     return Autor(id=fila[0], nombre=fila[1], nacionalidad=fila[2])
+
+"""Mapeador Categoria"""
+
+def categoria_a_dto(categoria: Categoria) -> CategoriaDTO:
+    return CategoriaDTO(id=categoria.id, nombre=categoria.nombre)
+
+def dto_a_categoria(categoria_dto: CategoriaDTO) -> Categoria:
+    return Categoria(id=categoria_dto.id, nombre=categoria_dto.nombre)
+
+def fila_a_categoria(fila: tuple) -> Categoria:
+    return Categoria(id=fila[0], nombre=fila[1])
 
 """Mapeador Devolucion"""
 

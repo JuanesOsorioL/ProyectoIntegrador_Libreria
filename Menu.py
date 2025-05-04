@@ -4,8 +4,10 @@ import os
 from Utilidades.Configuracion import Configuracion
 from Controlador.DevolucionControlador import DevolucionControlador
 from Controlador.EditorialControlador import EditorialControlador
-from Controlador.AutorControlador import AutorControlador 
+from Controlador.AutorControlador import AutorControlador
+from Controlador.CategoriaControlador import CategoriaControlador
 
+categoriaControlador = CategoriaControlador()
 editorialControlador = EditorialControlador();
 rolControlador = RolControlador();
 devolucionControlador = DevolucionControlador()
@@ -37,7 +39,12 @@ class Menu:
         print("22. Mostrar Autor por ID")
         print("23. Actualizar Autor por ID")
         print("24. Borrar Autor por ID")
-        print("25. Salir")
+        print("25. Ingresar Categoría")
+        print("26. Mostrar Todas las Categorías")
+        print("27. Mostrar Categoría por ID")
+        print("28. Actualizar Categoría por ID")
+        print("39. Borrar Categoría por ID")
+        print("30. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
 
@@ -205,6 +212,42 @@ class Menu:
                     print("ID inválido.")
 
             elif opcion == "25":
+                nombre = input("Ingrese el nombre de la Categoría: ")
+                descripcion = input("Ingrese la descripción de la Categoría: ")
+                resultado = categoriaControlador.insertarCategoria(nombre, descripcion)
+                print(resultado)
+
+            elif opcion == "26":
+                resultado = categoriaControlador.mostrarTodasLasCategorias()
+                print(resultado)
+
+            elif opcion == "27":
+                try:
+                    id = int(input("Ingrese el ID de la Categoría: "))
+                    resultado = categoriaControlador.mostrarCategoriaPorId(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "28":
+                try:
+                    id = int(input("Ingrese el ID de la categoría a actualizar: "))
+                    nombre = input("Ingrese el nuevo nombre de la categoría: ")
+                    descripcion = input("Ingrese la nueva descripción: ")
+                    resultado = categoriaControlador.actualizarCategoria(id, nombre, descripcion)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "29":
+                try:
+                    id = int(input("Ingrese el ID de la categoría a borrar: "))
+                    resultado = categoriaControlador.borrarCategoria(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "30":
                 print("Saliendo del programa...")
                 break
 
@@ -595,7 +638,73 @@ def crear_tablas_y_procedimientos():
                 END IF;
             END
             """,
-            #Autores
+
+            #CATEGORIAS
+            "DROP PROCEDURE IF EXISTS proc_insert_categoria",
+            """
+            CREATE PROCEDURE proc_insert_categoria(
+                IN p_Nombre VARCHAR(100),
+                OUT p_NuevoId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM categorias WHERE nombre = p_Nombre) THEN
+                    SET p_Respuesta = 2;
+                    SET p_NuevoId = NULL;
+                ELSE
+                    INSERT INTO categorias (nombre) VALUES (p_Nombre);
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1;
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_categoria",
+            """
+            CREATE PROCEDURE proc_select_categoria()
+            BEGIN
+                SELECT id, nombre FROM categorias;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_categoria_por_id",
+            """
+            CREATE PROCEDURE proc_select_categoria_por_id(IN p_id INT)
+            BEGIN
+                SELECT id, nombre FROM categorias WHERE id = p_id;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_update_categoria",
+            """
+            CREATE PROCEDURE proc_update_categoria(
+                IN p_Id INT,
+                IN p_Nombre VARCHAR(100),
+                INOUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM categorias WHERE id = p_Id) THEN
+                    UPDATE categorias SET nombre = p_Nombre WHERE id = p_Id;
+                    SET p_Respuesta = 1;
+                ELSE
+                    SET p_Respuesta = 2;
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_delete_categoria",
+            """
+            CREATE PROCEDURE proc_delete_categoria(
+                IN p_Id INT,
+                INOUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM categorias WHERE id = p_Id) THEN
+                    DELETE FROM categorias WHERE id = p_Id;
+                    SET p_Respuesta = 1;
+                ELSE
+                    SET p_Respuesta = 2;
+                END IF;
+            END
+            """,
+
+            #AUTORES
             
             "DROP PROCEDURE IF EXISTS proc_insert_autor",
             """
