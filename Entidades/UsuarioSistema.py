@@ -1,52 +1,45 @@
 class UsuarioSistema:
 
-    def __init__(self, id=None, usuario_id=None, username_payload=None,username_hmac=None, contrasena=None, rol_id=None, salt=None):
+    def __init__(self, id=None, usuario_id=None, nombre_usuario=None,nombre_usuario_hmac=None, contrasena=None, salt=None):
         self.id = id
         self.usuario_id = usuario_id
-        self.username_payload = username_payload
-        self.username_hmac=username_hmac
+        self.nombre_usuario = nombre_usuario
+        self.nombre_usuario_hmac=nombre_usuario_hmac
         self.contrasena = contrasena
-        self.rol_id=rol_id
         self.salt=salt
 
     def Get_Id(self): 
         return self.id
     
-    def Set_Id(self, id): 
-        self.id = id
+    def Set_Id(self, value): 
+        self.id = value
 
     def Get_UsuarioId(self): 
         return self.usuario_id
     
-    def Set_UsuarioId(self, usuario_id): 
-        self.usuario_id = usuario_id
+    def Set_UsuarioId(self, value): 
+        self.usuario_id = value
 
-    def Get_Username_Payload(self): 
-        return self.username_payload
+    def Get_nombre_usuario(self): 
+        return self.nombre_usuario
     
-    def Set_Username_Payload(self, username_payload): 
-        self.username_payload = username_payload
+    def Set_nombre_usuario(self, value): 
+        self.nombre_usuario = value
 
     def Get_Contrasena(self): 
         return self.contrasena
     
-    def Set_Contrasena(self, contrasena): 
-        self.contrasena = contrasena
+    def Set_Contrasena(self, value): 
+        self.contrasena = value
 
-    def get_Salt(self):
+    def Get_Salt(self):
         return self.salt
     
-    def set_Salt(self, value):
+    def Set_Salt(self, value):
         self.salt = value
     
-    def Get_Username_HMAC(self):
-        return self.username_hmac
+    def Get_nombre_Usuario_HMAC(self):
+        return self.nombre_usuario_hmac
 
-    def Set_Username_HMAC(self, username_hmac):
-        self.username_hmac = username_hmac
-
-    def Get_RolId(self):
-        return self.rol_id
-
-    def Set_RolId(self, rol_id):
-        self.rol_id = rol_id
+    def Set_nombre_Usuario_HMAC(self, value):
+        self.nombre_usuario_hmac = value

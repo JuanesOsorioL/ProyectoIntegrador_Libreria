@@ -17,13 +17,13 @@ class UsuarioServicio:
     def insertar(self, dto: UsuarioDTO) -> Respuesta:
         try:
             usuario = dto_a_usuario(dto)
-            resultado = repositorio.insertar_Usuario(usuario)
+            resultado = repositorio.insertarUsuario(usuario)
             nuevo_id, codigo = resultado
 
             if codigo == EXITO:
                 usuario_insertado = Usuario()
                 usuario_insertado.Set_Id(nuevo_id)
-                fila = repositorio.mostrar_Usuario_por_id(usuario_insertado)
+                fila = repositorio.mostrarUsuarioPorId(usuario_insertado)
                 if fila:
                     usuarioDto = usuario_a_dto(fila_a_usuario(fila))
                     return Respuesta("Operación Exitosa", "Usuario registrado", usuarioDto)
@@ -37,7 +37,7 @@ class UsuarioServicio:
 
     def listar(self) -> Respuesta:
         try:
-            lista = repositorio.mostrar_todos_los_Usuarios()
+            lista = repositorio.mostrarTodosLosUsuarios()
             usuarios = [str(usuario_a_dto(fila_a_usuario(f))) for f in lista]
             if usuarios:
                 return Respuesta("Operación Exitosa", "Usuarios encontrados", usuarios)
@@ -46,10 +46,10 @@ class UsuarioServicio:
         except Exception as ex:
             return Respuesta("Error Sistema", f"Error al listar usuarios: {ex}", [])
 
-    def obtener_por_id(self, dto: UsuarioDTO) -> Respuesta:
+    def obtenerPorId(self, dto: UsuarioDTO) -> Respuesta:
         try:
             usuario = dto_a_usuario(dto)
-            fila = repositorio.mostrar_Usuario_por_id(usuario)
+            fila = repositorio.mostrarUsuarioPorId(usuario)
             if fila:
                 dto_resultado = usuario_a_dto(fila_a_usuario(fila))
                 return Respuesta("Operación Exitosa", "Usuario encontrado", [str(dto_resultado)])
@@ -57,10 +57,10 @@ class UsuarioServicio:
         except Exception as ex:
             return Respuesta("Error Sistema", f"Error al buscar usuario por ID: {ex}", [])
 
-    def obtener_por_email(self, dto: UsuarioDTO) -> Respuesta:
+    def obtenerPorEmail(self, dto: UsuarioDTO) -> Respuesta:
         try:
             usuario = dto_a_usuario(dto)
-            fila = repositorio.mostrar_Usuario_por_email(usuario)
+            fila = repositorio.mostrarUsuarioPorEmail(usuario)
             if fila:
                 dto_resultado = usuario_a_dto(fila_a_usuario(fila))
                 return Respuesta("Operación Exitosa", "Usuario encontrado", [str(dto_resultado)])
@@ -71,9 +71,9 @@ class UsuarioServicio:
     def actualizar(self, dto: UsuarioDTO) -> Respuesta:
         try:
             usuario = dto_a_usuario(dto)
-            codigo = repositorio.actualizar_Usuario(usuario)
+            codigo = repositorio.actualizarUsuario(usuario)
             if codigo == EXITO:
-                fila = repositorio.mostrar_Usuario_por_id(usuario)
+                fila = repositorio.mostrarUsuarioPorId(usuario)
                 if fila:
                     dto_resultado = usuario_a_dto(fila_a_usuario(fila))
                     return Respuesta("Operación Exitosa", "Usuario actualizado correctamente", [str(dto_resultado)])
@@ -86,10 +86,10 @@ class UsuarioServicio:
     def borrar(self, dto: UsuarioDTO) -> Respuesta:
         try:
             usuario = dto_a_usuario(dto)
-            fila = repositorio.mostrar_Usuario_por_id(usuario)
+            fila = repositorio.mostrarUsuarioPorId(usuario)
             if not fila:
                 return Respuesta("Operación Fallida", "No existe el usuario a eliminar", [])
-            codigo = repositorio.borrar_Usuario(usuario)
+            codigo = repositorio.borrarUsuario(usuario)
             if codigo == EXITO:
                 dto_resultado = usuario_a_dto(fila_a_usuario(fila))
                 return Respuesta("Operación Exitosa", "Usuario eliminado", [str(dto_resultado)])
@@ -97,10 +97,10 @@ class UsuarioServicio:
         except Exception as ex:
             return Respuesta("Error Sistema", f"Error al eliminar usuario: {ex}", [])
         
-    def obtener_por_rol_id(self, dto: UsuarioDTO) -> Respuesta:
+    def obtenerPorRolId(self, dto: UsuarioDTO) -> Respuesta:
         try:
             usuario = dto_a_usuario(dto)
-            lista = repositorio.mostrar_Usuario_por_rol_id(usuario)
+            lista = repositorio.mostrarUsuarioPorRolId(usuario)
             usuarios = [str(usuario_a_dto(fila_a_usuario(f))) for f in lista]
             if usuarios:
                 return Respuesta("Operación Exitosa", "Usuario encontrado con el mismo Rol ID", usuarios)

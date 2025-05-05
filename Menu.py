@@ -14,7 +14,7 @@ usuarioSistemaControlador = UsuarioSistemaControlador()
 
 class Menu:
 
-    def seleccionar_Un_Rol_valido(resultado)-> int:
+    def seleccionarUnRolValido(resultado)-> int:
         ids_validos = [rol.id for rol in resultado]          
         while True:
 
@@ -96,18 +96,19 @@ class Menu:
                             continue
 
                         resultado=rolControlador.mostrarTodosLosRolesSeleccionar()
-                        rol_id=Menu.seleccionar_Un_Rol_valido(resultado)
-                        print(rol_id)
+                        rol_id=Menu.seleccionarUnRolValido(resultado)
+
                         resultado = usuarioControlador.insertarUsuario(nombre, email, telefono, direccion, fecha_formateada, rol_id)
 
                         usuarioDto = resultado.get_resultado()  
-                        Usuario_id = usuarioDto.Get_Id()
-                        Usuario = input("Usuario: ")
+                        usuario_id = usuarioDto.Get_Id()
+                        nombre_usuario = input("Nombre de Usuario: ")
                         contrasena = input("Contraseña: ")
 
-                        resultado_registrado=usuarioSistemaControlador.insertar(Usuario_id,Usuario,contrasena)
+                        resultado_registrado=usuarioSistemaControlador.insertar(usuario_id,nombre_usuario,contrasena)
 
-                        print(resultado,resultado_registrado)
+                        print(resultado)
+                        print(resultado_registrado)
                     except Exception as ex:
                         print(f"Error al ingresar usuario: {ex}")
 
@@ -115,8 +116,11 @@ class Menu:
                     os.system('cls')
                 case "3":
                     os.system('cls')
-    
-
+                    print("Saliendo del programa...")
+                    break
+                case _:
+                    os.system('cls')
+                    print("Opción no válida, intente de nuevo.")
 
 
 
@@ -261,14 +265,16 @@ class Menu:
                 print("Opción no válida, intente de nuevo.")
         """        
 
-
-    def crear_tablas_y_procedimientos():
+    def crear_tablas_y_procedimientos_vieho():
         try:
+            # Conectarse a la base de datos
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
+            cursor.execute("USE libreria;")
 
-            # --- Crear tablas ---
+            # --- 1) Crear tablas ---
             tablas = [
+                # Editoriales
                 """
                 CREATE TABLE IF NOT EXISTS editoriales (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -276,6 +282,14 @@ class Menu:
                     pais VARCHAR(50)
                 )
                 """,
+                # Roles
+                """
+                CREATE TABLE IF NOT EXISTS roles (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(50) NOT NULL UNIQUE
+                )
+                """,
+                # Autores
                 """
                 CREATE TABLE IF NOT EXISTS autores (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -283,12 +297,14 @@ class Menu:
                     nacionalidad VARCHAR(50)
                 )
                 """,
+                # Categorías
                 """
                 CREATE TABLE IF NOT EXISTS categorias (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     nombre VARCHAR(50) NOT NULL
                 )
                 """,
+                # Libros
                 """
                 CREATE TABLE IF NOT EXISTS libros (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -303,6 +319,7 @@ class Menu:
                     FOREIGN KEY (editorial_id) REFERENCES editoriales(id)
                 )
                 """,
+                # Libro–Autor (N:M)
                 """
                 CREATE TABLE IF NOT EXISTS libro_autor (
                     libro_id INT,
@@ -312,6 +329,7 @@ class Menu:
                     FOREIGN KEY (autor_id) REFERENCES autores(id)
                 )
                 """,
+                # Libro–Categoría (N:M)
                 """
                 CREATE TABLE IF NOT EXISTS libro_categoria (
                     libro_id INT,
@@ -321,12 +339,7 @@ class Menu:
                     FOREIGN KEY (categoria_id) REFERENCES categorias(id)
                 )
                 """,
-                """
-                CREATE TABLE IF NOT EXISTS roles (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    nombre VARCHAR(50) NOT NULL
-                )
-                """,
+                # Usuarios
                 """
                 CREATE TABLE IF NOT EXISTS usuarios (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -339,17 +352,19 @@ class Menu:
                     FOREIGN KEY (rol_id) REFERENCES roles(id)
                 )
                 """,
+                # Usuarios del sistema (credenciales)
                 """
                 CREATE TABLE IF NOT EXISTS usuarios_sistema (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     usuario_id INT,
-                    username JSON NOT NULL,
-                    contrasena VARCHAR(32) NOT NULL,
-                    rol_id INT,
-                    salt VARCHAR(32) NOT NULL,
+                    nombre_usuario BLOB NOT NULL,
+                    nombre_usuario_hmac CHAR(64) NOT NULL UNIQUE,
+                    contrasena CHAR(64) NOT NULL,
+                    salt CHAR(32) NOT NULL,
                     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                 )
                 """,
+                # Ventas
                 """
                 CREATE TABLE IF NOT EXISTS ventas (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -361,6 +376,7 @@ class Menu:
                     FOREIGN KEY (empleado_id) REFERENCES usuarios(id)
                 )
                 """,
+                # Detalle de venta
                 """
                 CREATE TABLE IF NOT EXISTS detalle_venta (
                     venta_id INT,
@@ -373,6 +389,7 @@ class Menu:
                     FOREIGN KEY (libro_id) REFERENCES libros(id)
                 )
                 """,
+                # Préstamos
                 """
                 CREATE TABLE IF NOT EXISTS prestamos (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -385,6 +402,7 @@ class Menu:
                     FOREIGN KEY (empleado_id) REFERENCES usuarios(id)
                 )
                 """,
+                # Detalle de préstamo
                 """
                 CREATE TABLE IF NOT EXISTS detalle_prestamo (
                     prestamo_id INT,
@@ -395,6 +413,7 @@ class Menu:
                     FOREIGN KEY (libro_id) REFERENCES libros(id)
                 )
                 """,
+                # Devoluciones
                 """
                 CREATE TABLE IF NOT EXISTS devoluciones (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -409,18 +428,13 @@ class Menu:
 
             for sql in tablas:
                 cursor.execute(sql)
-
+            conexion.commit()
             print("Tablas creadas correctamente.")
 
-            # --- Crear procedimientos almacenados ---
+            # --- 2) Crear procedimientos almacenados ---
             procedimientos = [
-                # ----------------------------
-                # PROCEDIMIENTOS: ROLES
-                # ----------------------------
-                """
-                DROP PROCEDURE IF EXISTS proc_insert_rol
-                """,
-                """
+                # ROLES
+                ("proc_insert_rol", """
                 CREATE PROCEDURE proc_insert_rol(
                     IN p_Nombre VARCHAR(50),
                     OUT p_NuevoId INT,
@@ -436,11 +450,8 @@ class Menu:
                         SET p_Respuesta = 1;
                     END IF;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_select_rol
-                """,
-                """
+                """),
+                ("proc_select_rol", """
                 CREATE PROCEDURE proc_select_rol(
                     INOUT p_Respuesta INT
                 )
@@ -448,22 +459,16 @@ class Menu:
                     SELECT id, nombre FROM roles;
                     SET p_Respuesta = 1;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_select_rol_por_id
-                """,
-                """
-                CREATE PROCEDURE proc_select_rol_por_id (
+                """),
+                ("proc_select_rol_por_id", """
+                CREATE PROCEDURE proc_select_rol_por_id(
                     IN p_id INT
                 )
                 BEGIN
                     SELECT id, nombre FROM roles WHERE id = p_id;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_update_rol
-                """,
-                """
+                """),
+                ("proc_update_rol", """
                 CREATE PROCEDURE proc_update_rol(
                     IN p_Id INT,
                     IN p_Nombre VARCHAR(50),
@@ -479,11 +484,8 @@ class Menu:
                         SET p_Respuesta = 2;
                     END IF;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_delete_rol
-                """,
-                """
+                """),
+                ("proc_delete_rol", """
                 CREATE PROCEDURE proc_delete_rol(
                     IN p_id INT,
                     INOUT p_Respuesta INT
@@ -496,14 +498,10 @@ class Menu:
                         SET p_Respuesta = 2;
                     END IF;
                 END
-                """,
-                # ----------------------------
-                # PROCEDIMIENTOS: USUARIOS
-                # ----------------------------
-                """
-                DROP PROCEDURE IF EXISTS proc_insert_usuario
-                """,
-                """
+                """),
+
+                # USUARIOS
+                ("proc_insert_usuario", """
                 CREATE PROCEDURE proc_insert_usuario(
                     IN p_nombre VARCHAR(100),
                     IN p_email VARCHAR(100),
@@ -521,16 +519,12 @@ class Menu:
                     ELSE
                         INSERT INTO usuarios (nombre, email, telefono, direccion, fecha_registro, rol_id)
                         VALUES (p_nombre, p_email, p_telefono, p_direccion, p_fecha_registro, p_rol_id);
-
                         SET p_nuevo_id = LAST_INSERT_ID();
                         SET p_respuesta = 1;
                     END IF;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_select_usuarios
-                """,
-                """
+                """),
+                ("proc_select_usuarios", """
                 CREATE PROCEDURE proc_select_usuarios(
                     INOUT p_respuesta INT
                 )
@@ -539,11 +533,8 @@ class Menu:
                     FROM usuarios;
                     SET p_respuesta = 1;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_select_usuario_por_id
-                """,
-                """
+                """),
+                ("proc_select_usuario_por_id", """
                 CREATE PROCEDURE proc_select_usuario_por_id(
                     IN p_id INT
                 )
@@ -552,11 +543,8 @@ class Menu:
                     FROM usuarios
                     WHERE id = p_id;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_update_usuario
-                """,
-                """
+                """),
+                ("proc_update_usuario", """
                 CREATE PROCEDURE proc_update_usuario(
                     IN p_id INT,
                     IN p_nombre VARCHAR(100),
@@ -577,17 +565,13 @@ class Menu:
                             fecha_registro = p_fecha_registro,
                             rol_id = p_rol_id
                         WHERE id = p_id;
-
                         SET p_respuesta = 1;
                     ELSE
                         SET p_respuesta = 2;
                     END IF;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_delete_usuario
-                """,
-                """
+                """),
+                ("proc_delete_usuario", """
                 CREATE PROCEDURE proc_delete_usuario(
                     IN p_id INT,
                     INOUT p_respuesta INT
@@ -600,11 +584,8 @@ class Menu:
                         SET p_respuesta = 2;
                     END IF;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_select_usuario_por_email
-                """,
-                """
+                """),
+                ("proc_select_usuario_por_email", """
                 CREATE PROCEDURE proc_select_usuario_por_email(
                     IN p_email VARCHAR(100)
                 )
@@ -613,11 +594,8 @@ class Menu:
                     FROM usuarios
                     WHERE email = p_email;
                 END
-                """,
-                """
-                DROP PROCEDURE IF EXISTS proc_select_usuarios_por_rol
-                """,
-                """
+                """),
+                ("proc_select_usuarios_por_rol", """
                 CREATE PROCEDURE proc_select_usuarios_por_rol(
                     IN p_rol_id INT
                 )
@@ -626,187 +604,595 @@ class Menu:
                     FROM usuarios
                     WHERE rol_id = p_rol_id;
                 END
-                """,
+                """),
 
-                """
+                # USUARIOS_SISTEMA
+                ("proc_delete_usuarios_sistema", """
                 CREATE PROCEDURE proc_delete_usuarios_sistema(
-                    IN    p_id        INT,
+                    IN p_id INT,
                     INOUT p_respuesta INT
                 )
                 BEGIN
-                    IF EXISTS (
-                        SELECT 1
-                        FROM usuarios_sistema
-                        WHERE id = p_id
-                    ) THEN
-                        DELETE FROM usuarios_sistema
-                        WHERE id = p_id;
-                        SET p_respuesta = 1;    -- eliminado
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE id = p_id) THEN
+                        DELETE FROM usuarios_sistema WHERE id = p_id;
+                        SET p_respuesta = 1;
                     ELSE
-                        SET p_respuesta = 2;    -- no existe
+                        SET p_respuesta = 2;
                     END IF;
                 END
-                """,
-
-                """
+                """),
+                ("proc_update_usuarios_sistema", """
                 CREATE PROCEDURE proc_update_usuarios_sistema(
-                    IN     p_id                 INT,
-                    IN     p_usuario_id         INT,
-                    IN     p_username_payload   BLOB,
-                    IN     p_username_hmac      CHAR(64),
-                    IN     p_contrasena         VARCHAR(32),
-                    IN     p_rol_id             INT,
-                    IN     p_salt               VARCHAR(32),
-                    INOUT  p_respuesta          INT
+                    IN p_id INT,
+                    IN p_usuario_id INT,
+                    IN p_nombre_usuario BLOB,
+                    IN p_nombre_usuario_hmac CHAR(64),
+                    IN p_contrasena VARCHAR(32),
+                    IN p_salt VARCHAR(32),
+                    INOUT p_respuesta INT
                 )
                 BEGIN
-                    IF EXISTS (
-                        SELECT 1
-                        FROM usuarios_sistema
-                        WHERE id = p_id
-                    ) THEN
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE id = p_id) THEN
                         UPDATE usuarios_sistema
                         SET usuario_id       = p_usuario_id,
-                            username_payload = p_username_payload,
-                            username_hmac    = p_username_hmac,
+                            nombre_usuario = p_nombre_usuario,
+                            nombre_usuario_hmac    = p_nombre_usuario_hmac,
                             contrasena       = p_contrasena,
-                            rol_id           = p_rol_id,
                             salt             = p_salt
                         WHERE id = p_id;
-                        SET p_respuesta = 1;    -- actualizado
+                        SET p_respuesta = 1;
                     ELSE
-                        SET p_respuesta = 2;    -- no existe el id
+                        SET p_respuesta = 2;
                     END IF;
                 END
-                """,
-
-                """
+                """),
+                ("proc_select_usuarios_sistema_por_hmac", """
                 CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
-                IN p_username_hmac CHAR(64)
+                    IN p_nombre_usuario_hmac CHAR(64)
                 )
                 BEGIN
-                    SELECT
-                        id,
-                        usuario_id,
-                        username_payload,
-                        username_hmac,
-                        contrasena,
-                        rol_id,
-                        salt
+                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
                     FROM usuarios_sistema
-                    WHERE username_hmac = p_username_hmac;
+                    WHERE nombre_usuario_hmac = p_nombre_usuario_hmac;
                 END
-                """,
-
-                """
+                """),
+                ("proc_select_usuarios_sistema_por_id", """
                 CREATE PROCEDURE proc_select_usuarios_sistema_por_id(
-                IN p_id INT
+                    IN p_id INT
                 )
                 BEGIN
-                    SELECT
-                        id,
-                        usuario_id,
-                        username_payload,
-                        username_hmac,
-                        contrasena,
-                        rol_id,
-                        salt
+                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
                     FROM usuarios_sistema
                     WHERE id = p_id;
                 END
-                """,
-
-                """
+                """),
+                ("proc_select_usuarios_sistema", """
                 CREATE PROCEDURE proc_select_usuarios_sistema()
                 BEGIN
-                    SELECT
-                        id,
-                        usuario_id,
-                        username_payload,
-                        username_hmac,
-                        contrasena,
-                        rol_id,
-                        salt
+                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
                     FROM usuarios_sistema;
                 END
-                """,
-
-                """
+                """),
+                ("proc_insert_usuarios_sistema", """
                 CREATE PROCEDURE proc_insert_usuarios_sistema(
-                    IN  p_usuario_id         INT,
-                    IN  p_username_payload   BLOB,
-                    IN  p_username_hmac      CHAR(64),
-                    IN  p_contrasena         VARCHAR(32),
-                    IN  p_rol_id             INT,
-                    IN  p_salt               VARCHAR(32),
-                    OUT p_nuevo_id           INT,
-                    OUT p_respuesta          INT
+                    IN p_usuario_id INT,
+                    IN p_nombre_usuario BLOB,
+                    IN p_nombre_usuario_hmac CHAR(64),
+                    IN p_contrasena VARCHAR(32),
+                    IN p_salt VARCHAR(32),
+                    OUT p_nuevo_id INT,
+                    OUT p_respuesta INT
                 )
                 BEGIN
-
-                    IF EXISTS (
-                        SELECT 1
-                        FROM usuarios_sistema
-                        WHERE username_hmac = p_username_hmac
-                    ) THEN
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE nombre_usuario_hmac = p_nombre_usuario_hmac) THEN
                         SET p_respuesta = 2;
                         SET p_nuevo_id  = NULL;
                     ELSE
                         INSERT INTO usuarios_sistema
-                            (usuario_id, username_payload, username_hmac, contrasena, rol_id, salt)
+                            (usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt)
                         VALUES
-                            (p_usuario_id, p_username_payload, p_username_hmac, p_contrasena, p_rol_id, p_salt);
+                            (p_usuario_id, p_nombre_usuario, p_nombre_usuario_hmac, p_contrasena, p_salt);
                         SET p_nuevo_id  = LAST_INSERT_ID();
                         SET p_respuesta = 1;
                     END IF;
                 END
-                """
-
+                """)
             ]
 
-            for proc in procedimientos:
-                cursor.execute(proc)
-
+            for name, ddl in procedimientos:
+                cursor.execute(f"DROP PROCEDURE IF EXISTS {name};")
+                cursor.execute(ddl)
             conexion.commit()
             print("Procedimientos almacenados creados correctamente.")
 
-        except Exception as e:
-            if "1050" in str(e):
-                print("La tablas ya existe.")
-            else:
-                print("Ocurrió un error al crear la tabla:", e)
+            # --- 3) Insertar datos iniciales ---
+            InsertarRoles = [
+                "INSERT INTO libreria.roles (nombre) VALUES ('Administrador');",
+                "INSERT INTO libreria.roles (nombre) VALUES ('Cliente');"
+            ]
+            for insert in InsertarRoles:
+                cursor.execute(insert)
+            conexion.commit()
+            print("Roles creados correctamente.")
 
+        except Exception as e:
+            msg = str(e)
+            if "1050" in msg:
+                print("Las tablas ya existen.")
+            else:
+                print("Ocurrió un error al crear las tablas o procedimientos:", e)
         finally:
             cursor.close()
             conexion.close()
 
 
-
-    def crear_tabla():
+    def crear_tablas_y_procedimientos():
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            
-            query = """
-                CREATE TABLE roles (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(50) NOT NULL
-            );
-            """
-            
-            cursor.execute(query)
+            cursor.execute("USE libreria;")
+
+
+            cursor.execute("SET FOREIGN_KEY_CHECKS=0;")
+            drops = [
+                "devoluciones",
+                "detalle_prestamo",
+                "prestamos",
+                "detalle_venta",
+                "ventas",
+                "usuarios_sistema",
+                "usuarios",
+                "libro_categoria",
+                "libro_autor",
+                "libros",
+                "categorias",
+                "autores",
+                "roles",
+                "editoriales"
+            ]
+            for tbl in drops:
+                cursor.execute(f"DROP TABLE IF EXISTS {tbl};")
+            cursor.execute("SET FOREIGN_KEY_CHECKS=1;")
             conexion.commit()
-            print("Tabla 'roles' creada exitosamente.")
-    
+            print("Tablespaces previos descartados.")
+
+            # 1) Crear tablas
+            tablas = [
+                # Editoriales
+                """
+                CREATE TABLE editoriales (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(100) NOT NULL,
+                    pais VARCHAR(50)
+                ) ENGINE=InnoDB;
+                """,
+                # Roles
+                """
+                CREATE TABLE roles (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(50) NOT NULL UNIQUE
+                ) ENGINE=InnoDB;
+                """,
+                # Autores
+                """
+                CREATE TABLE autores (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(100) NOT NULL,
+                    nacionalidad VARCHAR(50)
+                ) ENGINE=InnoDB;
+                """,
+                # Categorías
+                """
+                CREATE TABLE categorias (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(50) NOT NULL
+                ) ENGINE=InnoDB;
+                """,
+                # Libros
+                """
+                CREATE TABLE libros (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    titulo VARCHAR(150) NOT NULL,
+                    isbn VARCHAR(20) UNIQUE,
+                    descripcion TEXT,
+                    anio_publicacion YEAR,
+                    formato ENUM('Físico', 'Digital'),
+                    editorial_id INT,
+                    precio DECIMAL(10,2),
+                    stock INT,
+                    FOREIGN KEY (editorial_id) REFERENCES editoriales(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Libro–Autor
+                """
+                CREATE TABLE libro_autor (
+                    libro_id INT,
+                    autor_id INT,
+                    PRIMARY KEY (libro_id, autor_id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id),
+                    FOREIGN KEY (autor_id) REFERENCES autores(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Libro–Categoría
+                """
+                CREATE TABLE libro_categoria (
+                    libro_id INT,
+                    categoria_id INT,
+                    PRIMARY KEY (libro_id, categoria_id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id),
+                    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Usuarios
+                """
+                CREATE TABLE usuarios (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) NOT NULL UNIQUE,
+                    telefono VARCHAR(20),
+                    direccion VARCHAR(200),
+                    fecha_registro DATE DEFAULT CURRENT_DATE,
+                    rol_id INT,
+                    FOREIGN KEY (rol_id) REFERENCES roles(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Usuarios del sistema
+                """
+                CREATE TABLE usuarios_sistema (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    usuario_id INT,
+                    nombre_usuario BLOB NOT NULL,
+                    nombre_usuario_hmac CHAR(64) NOT NULL UNIQUE,
+                    contrasena CHAR(64) NOT NULL,
+                    salt CHAR(32) NOT NULL,
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Ventas
+                """
+                CREATE TABLE ventas (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    usuario_id INT NOT NULL,
+                    empleado_id INT NOT NULL,
+                    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    total DECIMAL(10,2),
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+                    FOREIGN KEY (empleado_id) REFERENCES usuarios(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Detalle de venta
+                """
+                CREATE TABLE detalle_venta (
+                    venta_id INT,
+                    libro_id INT,
+                    cantidad INT,
+                    precio_unitario DECIMAL(10,2),
+                    subtotal DECIMAL(10,2),
+                    PRIMARY KEY (venta_id, libro_id),
+                    FOREIGN KEY (venta_id) REFERENCES ventas(id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Préstamos
+                """
+                CREATE TABLE prestamos (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    usuario_id INT NOT NULL,
+                    empleado_id INT NOT NULL,
+                    fecha_prestamo DATE,
+                    fecha_devolucion DATE,
+                    estado VARCHAR(20),
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+                    FOREIGN KEY (empleado_id) REFERENCES usuarios(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Detalle de préstamo
+                """
+                CREATE TABLE detalle_prestamo (
+                    prestamo_id INT,
+                    libro_id INT,
+                    cantidad INT,
+                    PRIMARY KEY (prestamo_id, libro_id),
+                    FOREIGN KEY (prestamo_id) REFERENCES prestamos(id),
+                    FOREIGN KEY (libro_id) REFERENCES libros(id)
+                ) ENGINE=InnoDB;
+                """,
+                # Devoluciones
+                """
+                CREATE TABLE devoluciones (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    prestamo_id INT NOT NULL,
+                    fecha_real_devolucion DATE,
+                    estado_libro VARCHAR(20),
+                    observaciones TEXT,
+                    FOREIGN KEY (prestamo_id) REFERENCES prestamos(id)
+                ) ENGINE=InnoDB;
+                """
+            ]
+
+            for sql in tablas:
+                cursor.execute(sql)
+            conexion.commit()
+            print("Tablas creadas correctamente.")
+
+
+            procedimientos = [
+                ("proc_insert_rol", """
+                CREATE PROCEDURE proc_insert_rol(
+                    IN p_Nombre VARCHAR(50),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM roles WHERE nombre = p_Nombre) THEN
+                        SET p_Respuesta = 2;
+                        SET p_NuevoId = NULL;
+                    ELSE
+                        INSERT INTO roles (nombre) VALUES (p_Nombre);
+                        SET p_NuevoId = LAST_INSERT_ID();
+                        SET p_Respuesta = 1;
+                    END IF;
+                END
+                """),
+                ("proc_select_rol", """
+                CREATE PROCEDURE proc_select_rol(
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    SELECT id, nombre FROM roles;
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_rol_por_id", """
+                CREATE PROCEDURE proc_select_rol_por_id(
+                    IN p_id INT
+                )
+                BEGIN
+                    SELECT id, nombre FROM roles WHERE id = p_id;
+                END
+                """),
+                ("proc_update_rol", """
+                CREATE PROCEDURE proc_update_rol(
+                    IN p_Id INT,
+                    IN p_Nombre VARCHAR(50),
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM roles WHERE id = p_Id) THEN
+                        UPDATE roles SET nombre = p_Nombre WHERE id = p_Id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_delete_rol", """
+                CREATE PROCEDURE proc_delete_rol(
+                    IN p_id INT,
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM roles WHERE id = p_id) THEN
+                        DELETE FROM roles WHERE id = p_id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_insert_usuario", """
+                CREATE PROCEDURE proc_insert_usuario(
+                    IN p_nombre VARCHAR(100),
+                    IN p_email VARCHAR(100),
+                    IN p_telefono VARCHAR(20),
+                    IN p_direccion VARCHAR(255),
+                    IN p_fecha_registro DATE,
+                    IN p_rol_id INT,
+                    OUT p_nuevo_id INT,
+                    OUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios WHERE email = p_email) THEN
+                        SET p_respuesta = 2;
+                        SET p_nuevo_id = NULL;
+                    ELSE
+                        INSERT INTO usuarios (nombre, email, telefono, direccion, fecha_registro, rol_id)
+                        VALUES (p_nombre, p_email, p_telefono, p_direccion, p_fecha_registro, p_rol_id);
+                        SET p_nuevo_id = LAST_INSERT_ID();
+                        SET p_respuesta = 1;
+                    END IF;
+                END
+                """),
+                ("proc_select_usuarios", """
+                CREATE PROCEDURE proc_select_usuarios(
+                    INOUT p_respuesta INT
+                )
+                BEGIN
+                    SELECT id, nombre, email, telefono, direccion, fecha_registro, rol_id
+                    FROM usuarios;
+                    SET p_respuesta = 1;
+                END
+                """),
+                ("proc_select_usuario_por_id", """
+                CREATE PROCEDURE proc_select_usuario_por_id(
+                    IN p_id INT
+                )
+                BEGIN
+                    SELECT id, nombre, email, telefono, direccion, fecha_registro, rol_id
+                    FROM usuarios WHERE id = p_id;
+                END
+                """),
+                ("proc_update_usuario", """
+                CREATE PROCEDURE proc_update_usuario(
+                    IN p_id INT,
+                    IN p_nombre VARCHAR(100),
+                    IN p_email VARCHAR(100),
+                    IN p_telefono VARCHAR(20),
+                    IN p_direccion VARCHAR(255),
+                    IN p_fecha_registro DATE,
+                    IN p_rol_id INT,
+                    INOUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios WHERE id = p_id) THEN
+                        UPDATE usuarios
+                        SET nombre = p_nombre,
+                            email = p_email,
+                            telefono = p_telefono,
+                            direccion = p_direccion,
+                            fecha_registro = p_fecha_registro,
+                            rol_id = p_rol_id
+                        WHERE id = p_id;
+                        SET p_respuesta = 1;
+                    ELSE
+                        SET p_respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_delete_usuario", """
+                CREATE PROCEDURE proc_delete_usuario(
+                    IN p_id INT,
+                    INOUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios WHERE id = p_id) THEN
+                        DELETE FROM usuarios WHERE id = p_id;
+                        SET p_respuesta = 1;
+                    ELSE
+                        SET p_respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_select_usuario_por_email", """
+                CREATE PROCEDURE proc_select_usuario_por_email(
+                    IN p_email VARCHAR(100)
+                )
+                BEGIN
+                    SELECT id, nombre, email, telefono, direccion, fecha_registro, rol_id
+                    FROM usuarios WHERE email = p_email;
+                END
+                """),
+                ("proc_select_usuarios_por_rol", """
+                CREATE PROCEDURE proc_select_usuarios_por_rol(
+                    IN p_rol_id INT
+                )
+                BEGIN
+                    SELECT id, nombre, email, telefono, direccion, fecha_registro, rol_id
+                    FROM usuarios WHERE rol_id = p_rol_id;
+                END
+                """),
+                ("proc_delete_usuarios_sistema", """
+                CREATE PROCEDURE proc_delete_usuarios_sistema(
+                    IN p_id INT,
+                    INOUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE id = p_id) THEN
+                        DELETE FROM usuarios_sistema WHERE id = p_id;
+                        SET p_respuesta = 1;
+                    ELSE
+                        SET p_respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_update_usuarios_sistema", """
+                CREATE PROCEDURE proc_update_usuarios_sistema(
+                    IN p_id INT,
+                    IN p_usuario_id INT,
+                    IN p_nombre_usuario BLOB,
+                    IN p_nombre_usuario_hmac CHAR(64),
+                    IN p_contrasena VARCHAR(32),
+                    IN p_salt VARCHAR(32),
+                    INOUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE id = p_id) THEN
+                        UPDATE usuarios_sistema
+                        SET usuario_id       = p_usuario_id,
+                            nombre_usuario = p_nombre_usuario,
+                            nombre_usuario_hmac    = p_nombre_usuario_hmac,
+                            contrasena       = p_contrasena,
+                            salt             = p_salt
+                        WHERE id = p_id;
+                        SET p_respuesta = 1;
+                    ELSE
+                        SET p_respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_select_usuarios_sistema_por_hmac", """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
+                    IN p_nombre_usuario_hmac CHAR(64)
+                )
+                BEGIN
+                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
+                    FROM usuarios_sistema
+                    WHERE nombre_usuario_hmac = p_nombre_usuario_hmac;
+                END
+                """),
+                ("proc_select_usuarios_sistema_por_id", """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_id(
+                    IN p_id INT
+                )
+                BEGIN
+                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
+                    FROM usuarios_sistema
+                    WHERE id = p_id;
+                END
+                """),
+                ("proc_select_usuarios_sistema", """
+                CREATE PROCEDURE proc_select_usuarios_sistema()
+                BEGIN
+                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
+                    FROM usuarios_sistema;
+                END
+                """),
+                ("proc_insert_usuarios_sistema", """
+                CREATE PROCEDURE proc_insert_usuarios_sistema(
+                    IN p_usuario_id INT,
+                    IN p_nombre_usuario BLOB,
+                    IN p_nombre_usuario_hmac CHAR(64),
+                    IN p_contrasena VARCHAR(32),
+                    IN p_salt VARCHAR(32),
+                    OUT p_nuevo_id INT,
+                    OUT p_respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM usuarios_sistema WHERE nombre_usuario_hmac = p_nombre_usuario_hmac) THEN
+                        SET p_respuesta = 2;
+                        SET p_nuevo_id  = NULL;
+                    ELSE
+                        INSERT INTO usuarios_sistema
+                            (usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt)
+                        VALUES
+                            (p_usuario_id, p_nombre_usuario, p_nombre_usuario_hmac, p_contrasena, p_salt);
+                        SET p_nuevo_id  = LAST_INSERT_ID();
+                        SET p_respuesta = 1;
+                    END IF;
+                END
+                """)
+            ]
+
+            for name, ddl in procedimientos:
+                cursor.execute(f"DROP PROCEDURE IF EXISTS {name};")
+                cursor.execute(ddl)
+            conexion.commit()
+            print("Procedimientos almacenados creados correctamente.")
+
+            inserts = [
+                "INSERT INTO libreria.roles (nombre) VALUES ('Administrador');",
+                "INSERT INTO libreria.roles (nombre) VALUES ('Cliente');"
+            ]
+            for ins in inserts:
+                cursor.execute(ins)
+            conexion.commit()
+            print("Roles iniciales insertados correctamente.")
+
         except Exception as e:
-            if "1050" in str(e):
-                print("La tabla 'roles' ya existe.")
-            else:
-                print("Ocurrió un error al crear la tabla:", e)
-            
+            print("Error al crear tablas/procedimientos:", e)
         finally:
-                cursor.close()
-                conexion.close()
+            cursor.close()
+            conexion.close()
 
 
 if __name__ == "__main__":

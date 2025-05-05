@@ -1,6 +1,12 @@
 -- Creación de usuario con permisos adecuados (más seguro)
-CREATE USER 'user_biblioteca'@'localhost' IDENTIFIED BY 'B1bl10t3c4_2024!';
-GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE ON db_biblioteca.* TO 'user_biblioteca'@'localhost';
+DROP USER IF EXISTS 'user_ptyhon'@'localhost';
+CREATE USER 'user_ptyhon'@'localhost' IDENTIFIED BY 'Clas3s1Nt2024_!';
+GRANT ALL PRIVILEGES ON libreria.* TO 'user_ptyhon'@'localhost';
+FLUSH PRIVILEGES;
+
+
+
+
 
 --tabla usuarios
 CREATE TABLE usuarios (
@@ -168,19 +174,16 @@ DELIMITER ;
 
 
 
-
--- Tabla usuarios_sistema (login)
+-- Tabla usuarios_sistema (login) SIN rol_id
 CREATE TABLE IF NOT EXISTS usuarios_sistema (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT,
-    username_payload BLOB NOT NULL,
-    username_hmac CHAR(64) NOT NULL UNIQUE,
+    nombre_usuario BLOB NOT NULL,
+    nombre_usuario_hmac CHAR(64) NOT NULL UNIQUE,
     contrasena VARCHAR(32) NOT NULL,
-    rol_id INT,
     salt VARCHAR(32) NOT NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
-
 
 -- ============================================
 -- 1) Insertar nuevo registro con payload MsgPack + HMAC
@@ -192,13 +195,11 @@ CREATE PROCEDURE proc_insert_usuarios_sistema(
     IN  p_username_payload   BLOB,
     IN  p_username_hmac      CHAR(64),
     IN  p_contrasena         VARCHAR(32),
-    IN  p_rol_id             INT,
     IN  p_salt               VARCHAR(32),
     OUT p_nuevo_id           INT,
     OUT p_respuesta          INT
 )
 BEGIN
-
     IF EXISTS (
         SELECT 1
           FROM usuarios_sistema
@@ -208,16 +209,14 @@ BEGIN
         SET p_nuevo_id  = NULL;
     ELSE
         INSERT INTO usuarios_sistema
-            (usuario_id, username_payload, username_hmac, contrasena, rol_id, salt)
+            (usuario_id, username_payload, username_hmac, contrasena, salt)
         VALUES
-            (p_usuario_id, p_username_payload, p_username_hmac, p_contrasena, p_rol_id, p_salt);
+            (p_usuario_id, p_username_payload, p_username_hmac, p_contrasena, p_salt);
         SET p_nuevo_id  = LAST_INSERT_ID();
         SET p_respuesta = 1;
     END IF;
 END $$
 DELIMITER ;
-
-
 
 -- ============================================
 -- 2) Listar todos los registros
@@ -232,13 +231,10 @@ BEGIN
         username_payload,
         username_hmac,
         contrasena,
-        rol_id,
         salt
       FROM usuarios_sistema;
 END $$
 DELIMITER ;
-
-
 
 -- ============================================
 -- 3) Consultar por ID
@@ -255,14 +251,11 @@ BEGIN
         username_payload,
         username_hmac,
         contrasena,
-        rol_id,
         salt
       FROM usuarios_sistema
      WHERE id = p_id;
 END $$
 DELIMITER ;
-
-
 
 -- ============================================
 -- 4) Consultar por HMAC (indicador único)
@@ -279,14 +272,11 @@ BEGIN
         username_payload,
         username_hmac,
         contrasena,
-        rol_id,
         salt
       FROM usuarios_sistema
      WHERE username_hmac = p_username_hmac;
 END $$
 DELIMITER ;
-
-
 
 -- ============================================
 -- 5) Actualizar un registro existente
@@ -299,7 +289,6 @@ CREATE PROCEDURE proc_update_usuarios_sistema(
     IN     p_username_payload   BLOB,
     IN     p_username_hmac      CHAR(64),
     IN     p_contrasena         VARCHAR(32),
-    IN     p_rol_id             INT,
     IN     p_salt               VARCHAR(32),
     INOUT  p_respuesta          INT
 )
@@ -310,12 +299,11 @@ BEGIN
          WHERE id = p_id
     ) THEN
         UPDATE usuarios_sistema
-           SET usuario_id       = p_usuario_id,
-               username_payload = p_username_payload,
-               username_hmac    = p_username_hmac,
-               contrasena       = p_contrasena,
-               rol_id           = p_rol_id,
-               salt             = p_salt
+           SET usuario_id        = p_usuario_id,
+               username_payload  = p_username_payload,
+               username_hmac     = p_username_hmac,
+               contrasena        = p_contrasena,
+               salt              = p_salt
          WHERE id = p_id;
         SET p_respuesta = 1;    -- actualizado
     ELSE
@@ -323,8 +311,6 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
-
-
 
 -- ============================================
 -- 6) Eliminar un registro
@@ -349,6 +335,12 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
+
+
+
+
+
+
 
 
 

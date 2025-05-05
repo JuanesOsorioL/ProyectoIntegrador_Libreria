@@ -55,19 +55,16 @@ class RolServicio:
 
     def MostrarTodosLosRolesSeleccionar(self) -> list:
         try:
-            listaRolDTO = [];
+            lista_rolDTO = [];
             lista=repositorio.MostrarTodosLosRoles();
 
             for roles in lista:
-                rol = Rol(
-                    id=roles[0],
-                    nombre=roles[1]
-                )
-                listaRolDTO.append(rol_a_dto(rol));
+                rol=fila_a_rol(roles)
+                lista_rolDTO.append(rol_a_dto(rol));
             
-            return listaRolDTO
+            return lista_rolDTO
         except Exception as ex:
-            return listaRolDTO
+            return lista_rolDTO
 
 
 

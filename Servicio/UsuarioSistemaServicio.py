@@ -20,9 +20,9 @@ YA_EXISTE = 2
 class UsuarioSistemaServicio:
 
     def insertar(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        contrasenaCifrada,salt=md5.encrypt(dto.get_contrasena())
-        ct,nonce,tag=aeshmac.encrypt(dto.get_username())
-        username_hmac_value = aeshmac.hmac(dto.get_username())
+        contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
+        ct,nonce,tag=aeshmac.encrypt(dto.get_nombre_usuario())
+        username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
         packed = msgpack.packb({
             "nonce": nonce,
             "tag":   tag,
@@ -30,13 +30,15 @@ class UsuarioSistemaServicio:
         })
 
         entidad = dto_a_usuario_sistema(dto)
-        entidad.set_salt(salt)
-        entidad.Set_contrasena(contrasenaCifrada)
+        entidad.Set_Salt(salt)
+        entidad.Set_Contrasena(contrasena_cifrada)
+        entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
+        entidad.Set_nombre_usuario(packed)
 
         nuevo_id, estado = repositorio.insertar(entidad)
 
         if estado == EXITO:
-            fila = repositorio.obtener_por_id(nuevo_id)
+            fila = repositorio.obtenerPorId(nuevo_id)
             if fila:
                 entidad_resultado = fila_a_usuario_sistema(fila)
                 dto_resultado = usuario_sistema_a_dto(entidad_resultado)
@@ -54,16 +56,16 @@ class UsuarioSistemaServicio:
 
     def obtener_por_id(self, dto: UsuarioSistemaDTO) -> Respuesta:
         entidad = dto_a_usuario_sistema(dto)
-        fila = repositorio.obtener_por_id(entidad.Get_Id())
+        fila = repositorio.obtenerPorId(entidad.Get_Id())
         if fila:
             entidad_resultado = fila_a_usuario_sistema(fila)
             dto_resultado = usuario_sistema_a_dto(entidad_resultado)
             return Respuesta("Operación Exitosa", "Encontrado por ID", [str(dto_resultado)])
         return Respuesta("Error", "No existe el registro", [])
 
-    def obtener_por_username(self, dto: UsuarioSistemaDTO) -> Respuesta:
+    def obtenerPorUsername(self, dto: UsuarioSistemaDTO) -> Respuesta:
         entidad = dto_a_usuario_sistema(dto)
-        fila = repositorio.obtener_por_username(entidad.Get_Username())
+        fila = repositorio.obtenerPorNombreUsuario(entidad.Get_nombre_Usuario_HMAC())
         if fila:
             entidad_resultado = fila_a_usuario_sistema(fila)
             dto_resultado = usuario_sistema_a_dto(entidad_resultado)
@@ -74,7 +76,7 @@ class UsuarioSistemaServicio:
         entidad = dto_a_usuario_sistema(dto)
         estado = repositorio.actualizar(entidad)
         if estado == EXITO:
-            fila = repositorio.obtener_por_id(entidad.Get_Id())
+            fila = repositorio.obtenerPorId(entidad.Get_Id())
             if fila:
                 entidad_resultado = fila_a_usuario_sistema(fila)
                 dto_resultado = usuario_sistema_a_dto(entidad_resultado)

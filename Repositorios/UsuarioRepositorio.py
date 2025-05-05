@@ -4,7 +4,7 @@ from Utilidades.Configuracion import Configuracion
 
 class UsuarioRepositorio:
 
-    def insertar_Usuario(self, usuario: Usuario) -> tuple: 
+    def insertarUsuario(self, usuario: Usuario) -> tuple: 
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
@@ -18,7 +18,7 @@ class UsuarioRepositorio:
             cursor.close()
             conexion.close()
 
-    def mostrar_todos_los_Usuarios(self) -> list:
+    def mostrarTodosLosUsuarios(self) -> list:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
@@ -30,7 +30,7 @@ class UsuarioRepositorio:
             cursor.close()
             conexion.close()
 
-    def mostrar_Usuario_por_id(self, usuario: Usuario) -> Usuario:
+    def mostrarUsuarioPorId(self, usuario: Usuario) -> Usuario:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
@@ -42,7 +42,7 @@ class UsuarioRepositorio:
             cursor.close()
             conexion.close()
 
-    def actualizar_Usuario(self, usuario: Usuario) -> int:
+    def actualizarUsuario(self, usuario: Usuario) -> int:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
@@ -56,7 +56,7 @@ class UsuarioRepositorio:
             cursor.close()
             conexion.close()
     
-    def borrar_Usuario(self, usuario: Usuario) -> int:
+    def borrarUsuario(self, usuario: Usuario) -> int:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
@@ -70,7 +70,7 @@ class UsuarioRepositorio:
             cursor.close()
             conexion.close()
 
-    def mostrar_Usuario_por_email(self, usuario: Usuario) -> Usuario:
+    def mostrarUsuarioPorEmail(self, usuario: Usuario) -> Usuario:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
@@ -82,7 +82,7 @@ class UsuarioRepositorio:
             cursor.close()
             conexion.close()
 
-    def mostrar_Usuario_por_rol_id(self, usuario: Usuario) -> Usuario:
+    def mostrarUsuarioPorRolId(self, usuario: Usuario) -> Usuario:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()

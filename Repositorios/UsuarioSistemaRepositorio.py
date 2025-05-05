@@ -7,8 +7,8 @@ class UsuarioSistemaRepositorio:
     def insertar(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        consulta = "{CALL proc_insert_usuarios_sistema(?,?,?,?, @p_nuevo_id, @p_respuesta)}"
-        cursor.execute(consulta, usuario.Get_UsuarioId(), usuario.Get_Username(), usuario.Get_contrasena(),usuario.get_salt())
+        consulta = "{CALL proc_insert_usuarios_sistema(?,?,?,?,?, @p_nuevo_id, @p_respuesta)}"
+        cursor.execute(consulta, usuario.Get_UsuarioId(), usuario.Get_nombre_usuario(), usuario.Get_nombre_Usuario_HMAC(), usuario.Get_Contrasena(), usuario.Get_Salt())
         cursor.execute("SELECT @p_nuevo_id, @p_respuesta")
         resultado = cursor.fetchone()
         conexion.commit()
@@ -25,7 +25,7 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
 
-    def obtener_por_id(self, id: int):
+    def obtenerPorId(self, id: int):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
         cursor.execute("{CALL proc_select_usuarios_sistema_por_id(?)}", id)
@@ -34,10 +34,10 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
 
-    def obtener_por_username(self, username: str):
+    def obtenerPorNombreUsuario(self, nombre_usuario: str):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        cursor.execute("{CALL proc_select_usuarios_sistema_por_username(?)}", username)
+        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", nombre_usuario)
         resultado = cursor.fetchone()
         cursor.close()
         conexion.close()
@@ -46,8 +46,8 @@ class UsuarioSistemaRepositorio:
     def actualizar(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        cursor.execute("{CALL proc_update_usuarios_sistema(?, ?, ?, ?, @p_respuesta)}", (
-            usuario.Get_Id(), usuario.Get_UsuarioId(), usuario.Get_Username(), usuario.Get_PasswordHash()
+        cursor.execute("{CALL proc_update_usuarios_sistema(?, ?, ?, ?, ?, ?, @p_respuesta)}", (
+            usuario.Get_Id(), usuario.Get_UsuarioId(), usuario.Get_nombre_usuario(), usuario.Get_nombre_Usuario_HMAC(), usuario.Get_Contrasena(), usuario.Get_Salt()
         ))
         cursor.execute("SELECT @p_respuesta")
         resultado = cursor.fetchone()[0]

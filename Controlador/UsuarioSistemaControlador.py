@@ -6,8 +6,8 @@ usuarioSistemaServicio = UsuarioSistemaServicio()
 
 class UsuarioSistemaControlador:
 
-    def insertar(self, usuario_id: int, username: str, password_hash: str) -> Respuesta:
-        dto = UsuarioSistemaDTO(None,usuario_id,username,password_hash)
+    def insertar(self, usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
+        dto = UsuarioSistemaDTO(None,usuario_id,nombre_usuario,contrasena)
         return usuarioSistemaServicio.insertar(dto)
 
     def listar(self) -> Respuesta:
@@ -17,12 +17,12 @@ class UsuarioSistemaControlador:
         dto = UsuarioSistemaDTO(id, None, None, None)
         return usuarioSistemaServicio.obtener_por_id(dto)
 
-    def obtenerPorUsername(self, username: str) -> Respuesta:
-        dto = UsuarioSistemaDTO(None, None, username, None)
-        return usuarioSistemaServicio.obtener_por_username(dto)
+    def obtenerPorNombreUsuario(self, nombre_usuario: str) -> Respuesta:
+        dto = UsuarioSistemaDTO(None, None, nombre_usuario, None)
+        return usuarioSistemaServicio.obtenerPorUsername(dto)
 
-    def actualizar(self, id: int, usuario_id: int, username: str, password_hash: str) -> Respuesta:
-        dto = UsuarioSistemaDTO(id,usuario_id,username,password_hash)
+    def actualizar(self, id: int, usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
+        dto = UsuarioSistemaDTO(id,usuario_id,nombre_usuario,contrasena)
         return usuarioSistemaServicio.actualizar(dto)
 
     def eliminar(self, id: int) -> Respuesta:
