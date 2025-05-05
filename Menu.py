@@ -6,12 +6,14 @@ from Controlador.DevolucionControlador import DevolucionControlador
 from Controlador.EditorialControlador import EditorialControlador
 from Controlador.AutorControlador import AutorControlador
 from Controlador.CategoriaControlador import CategoriaControlador
+from Controlador.LibroAutorControlador import LibroAutorControlador
 
 categoriaControlador = CategoriaControlador()
 editorialControlador = EditorialControlador();
 rolControlador = RolControlador();
 devolucionControlador = DevolucionControlador()
-autorControlador = AutorControlador()  
+autorControlador = AutorControlador()
+libroAutorControlador =LibroAutorControlador()  
 
 
 class Menu:
@@ -43,8 +45,13 @@ class Menu:
         print("26. Mostrar Todas las Categorías")
         print("27. Mostrar Categoría por ID")
         print("28. Actualizar Categoría por ID")
-        print("39. Borrar Categoría por ID")
-        print("30. Salir")
+        print("29. Borrar Categoría por ID")
+        print("30. Ingresar Libro-Autor")
+        print("31. Mostrar Todos los Libro-Autor")
+        print("32. Mostrar Libro-Autor por ID")
+        print("33. Actualizar Libro-Autor por ID")
+        print("34. Borrar Libro-Autor por ID")
+        print("35. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
 
@@ -100,41 +107,7 @@ class Menu:
                 except ValueError:
                     print("ID inválido.")
             
-            elif opcion == "15":
-                nombre = input("Ingrese el nombre de la Editorial: ")
-                pais = input("Ingrese el país de la Editorial: ")
-                resultado = editorialControlador.insertarEditorial(nombre, pais)
-                print(resultado)
-
-            elif opcion == "16":
-                resultado = editorialControlador.mostrarTodasLasEditoriales()
-                print(resultado)
-
-            elif opcion == "17":
-                try:
-                    id = int(input("Ingrese el ID de la Editorial: "))
-                    resultado = editorialControlador.mostrarEditorialPorId(id)
-                    print(resultado)
-                except ValueError:
-                    print("ID inválido.")
-
-            elif opcion == "18":
-                try:
-                    id = int(input("Ingrese el ID de la editorial a actualizar: "))
-                    nombre = input("Ingrese el nuevo nombre de la editorial: ")
-                    pais = input("Ingrese el nuevo país de la editorial: ")
-                    resultado = editorialControlador.actualizarEditorial(id, nombre, pais)
-                    print(resultado)
-                except ValueError:
-                    print("Datos inválidos.")
-
-            elif opcion == "19":
-                try:
-                    id = int(input("Ingrese el ID de la editorial a borrar: "))
-                    resultado = editorialControlador.borrarEditorial(id)
-                    print(resultado)
-                except ValueError:
-                    print("ID inválido.")                                      
+                                                  
 
             elif opcion == "10":
                 fecha = input("Ingrese la fecha de devolución (YYYY-MM-DD): ")
@@ -170,6 +143,42 @@ class Menu:
                 try:
                     id = int(input("ID de la devolución a borrar: "))
                     resultado = devolucionControlador.borrarDevolucion(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "15":
+                nombre = input("Ingrese el nombre de la Editorial: ")
+                pais = input("Ingrese el país de la Editorial: ")
+                resultado = editorialControlador.insertarEditorial(nombre, pais)
+                print(resultado)
+
+            elif opcion == "16":
+                resultado = editorialControlador.mostrarTodasLasEditoriales()
+                print(resultado)
+
+            elif opcion == "17":
+                try:
+                    id = int(input("Ingrese el ID de la Editorial: "))
+                    resultado = editorialControlador.mostrarEditorialPorId(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "18":
+                try:
+                    id = int(input("Ingrese el ID de la editorial a actualizar: "))
+                    nombre = input("Ingrese el nuevo nombre de la editorial: ")
+                    pais = input("Ingrese el nuevo país de la editorial: ")
+                    resultado = editorialControlador.actualizarEditorial(id, nombre, pais)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "19":
+                try:
+                    id = int(input("Ingrese el ID de la editorial a borrar: "))
+                    resultado = editorialControlador.borrarEditorial(id)
                     print(resultado)
                 except ValueError:
                     print("ID inválido.")
@@ -248,6 +257,45 @@ class Menu:
                     print("ID inválido.")
 
             elif opcion == "30":
+                try:
+                    id_libro = int(input("Ingrese el ID del libro: "))
+                    id_autor = int(input("Ingrese el ID del autor: "))
+                    resultado = libroAutorControlador.insertarLibroAutor(id_libro, id_autor)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "31":
+                resultado = libroAutorControlador.mostrarTodosLosLibroAutor()
+                print(resultado)
+
+            elif opcion == "32":
+                try:
+                    id = int(input("Ingrese el ID del libro autor: "))
+                    resultado = libroAutorControlador.mostrarLibroAutorPorId(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "33":
+                try:
+                    id = int(input("Ingrese el ID del libro autor a actualizar: "))
+                    id_libro = int(input("Ingrese el nuevo ID del libro: "))
+                    id_autor = int(input("Ingrese el nuevo ID del autor: "))
+                    resultado = libroAutorControlador.actualizarLibroAutor(id, id_libro, id_autor)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "34":
+                try:
+                    id = int(input("Ingrese el ID del libro autor a borrar: "))
+                    resultado = libroAutorControlador.borrarLibroAutor(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "35":
                 print("Saliendo del programa...")
                 break
 
@@ -777,7 +825,70 @@ def crear_tablas_y_procedimientos():
                 END IF;
             END
             """,
+            #Libro Autores
 
+            "DROP PROCEDURE IF EXISTS proc_insert_libro_autor",
+            """
+            CREATE PROCEDURE proc_insert_libro_autor(
+                IN p_IdLibro INT,
+                IN p_IdAutor INT,
+                OUT p_NuevoId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM libro_autor WHERE id_libro = p_IdLibro AND id_autor = p_IdAutor) THEN
+                    SET p_Respuesta = 2; -- Relación ya existe
+                    SET p_NuevoId = NULL;
+                ELSE
+                    INSERT INTO libro_autor (id_libro, id_autor) VALUES (p_IdLibro, p_IdAutor);
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1; -- Inserción exitosa
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_libro_autor",
+            """
+            CREATE PROCEDURE proc_select_libro_autor()
+            BEGIN
+                SELECT id, id_libro, id_autor FROM libro_autor;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_libro_autor_por_id",
+            """
+            CREATE PROCEDURE proc_select_libro_autor_por_id(IN p_Id INT)
+            BEGIN
+                SELECT id, id_libro, id_autor FROM libro_autor WHERE id = p_Id;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_update_libro_autor",
+            """
+            CREATE PROCEDURE proc_update_libro_autor(
+                IN p_Id INT,
+                IN p_IdLibro INT,
+                IN p_IdAutor INT,
+                INOUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM libro_autor WHERE id = p_Id) THEN
+                    UPDATE libro_autor SET id_libro = p_IdLibro, id_autor = p_IdAutor WHERE id = p_Id;
+                    SET p_Respuesta = 1; -- Actualización exitosa
+                ELSE
+                    SET p_Respuesta = 2; -- Relación no encontrada
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_delete_libro_autor",
+            """
+            CREATE PROCEDURE proc_delete_libro_autor(IN p_Id INT, INOUT p_Respuesta INT)
+            BEGIN
+                IF EXISTS (SELECT 1 FROM libro_autor WHERE id = p_Id) THEN
+                    DELETE FROM libro_autor WHERE id = p_Id;
+                    SET p_Respuesta = 1; -- Eliminación exitosa
+                ELSE
+                    SET p_Respuesta = 2; -- Relación no encontrada
+                END IF;
+            END
+            """,
 
             #devoluciones
             
