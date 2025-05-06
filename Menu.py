@@ -7,6 +7,7 @@ from Controlador.EditorialControlador import EditorialControlador
 from Controlador.AutorControlador import AutorControlador
 from Controlador.CategoriaControlador import CategoriaControlador
 from Controlador.LibroAutorControlador import LibroAutorControlador
+from Controlador.LibroCategoriaControlador import LibroCategoriaControlador
 
 categoriaControlador = CategoriaControlador()
 editorialControlador = EditorialControlador();
@@ -14,6 +15,7 @@ rolControlador = RolControlador();
 devolucionControlador = DevolucionControlador()
 autorControlador = AutorControlador()
 libroAutorControlador =LibroAutorControlador()  
+libroCategoriaControlador = LibroCategoriaControlador()
 
 
 class Menu:
@@ -51,7 +53,12 @@ class Menu:
         print("32. Mostrar Libro-Autor por ID")
         print("33. Actualizar Libro-Autor por ID")
         print("34. Borrar Libro-Autor por ID")
-        print("35. Salir")
+        print("35. Ingresar Libro-Categoría")
+        print("36. Mostrar Todos los Libro-Categoría")
+        print("37. Mostrar Libro-Categoría por ID")
+        print("38. Actualizar Libro-Categoría por ID")
+        print("39. Borrar Libro-Categoría por ID")
+        print("40. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
 
@@ -296,6 +303,50 @@ class Menu:
                     print("ID inválido.")
 
             elif opcion == "35":
+                try:
+                    id_libro = int(input("Ingrese el ID del libro: "))
+                    id_categoria = int(input("Ingrese el ID de la categoría: "))
+                    resultado = libroCategoriaControlador.insertarLibroCategoria(id_libro, id_categoria)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "36":
+                resultado = libroCategoriaControlador.mostrarTodosLosLibroCategoria()
+                print(resultado)
+
+            elif opcion == "37":
+                try:
+                    id_libro = int(input("Ingrese el ID del libro: "))
+                    id_categoria = int(input("Ingrese el ID de la categoría: "))
+                    resultado = libroCategoriaControlador.mostrarLibroCategoriaPorId(id_libro, id_categoria)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "38":
+                try:
+                    id_libro_actual = int(input("ID actual del libro: "))
+                    id_categoria_actual = int(input("ID actual de la categoría: "))
+                    id_libro_nuevo = int(input("Nuevo ID del libro: "))
+                    id_categoria_nueva = int(input("Nuevo ID de la categoría: "))
+                    resultado = libroCategoriaControlador.actualizarLibroCategoria(
+                        id_libro_actual, id_categoria_actual, id_libro_nuevo, id_categoria_nueva
+                    )
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "39":
+                try:
+                    id_libro = int(input("Ingrese el ID del libro: "))
+                    id_categoria = int(input("Ingrese el ID de la categoría: "))
+                    resultado = libroCategoriaControlador.borrarLibroCategoria(id_libro, id_categoria)
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos.")
+
+            elif opcion == "40":
                 print("Saliendo del programa...")
                 break
 
@@ -750,6 +801,90 @@ def crear_tablas_y_procedimientos():
                     SET p_Respuesta = 2;
                 END IF;
             END
+            """,
+
+            #LIBRO-CATEGORIAS
+            "DROP PROCEDURE IF EXISTS proc_insert_libro_categoria",
+            """
+            CREATE PROCEDURE proc_insert_libro_categoria(
+                IN p_LibroId INT,
+                IN p_CategoriaId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM libros_categorias 
+                    WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId
+                ) THEN
+                    SET p_Respuesta = 3; -- Ya existe la relación
+                ELSE
+                    INSERT INTO libros_categorias (libro_id, categoria_id) 
+                    VALUES (p_LibroId, p_CategoriaId);
+                    SET p_Respuesta = 1; -- Éxito
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_libro_categoria"
+            """
+            CREATE PROCEDURE proc_select_libro_categoria()
+            BEGIN
+                SELECT libro_id, categoria_id FROM libros_categorias;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_libro_categoria_por_id",
+            """
+            CREATE PROCEDURE proc_select_libro_categoria_por_id(
+                IN p_LibroId INT,
+                IN p_CategoriaId INT
+            )
+            BEGIN
+                SELECT libro_id, categoria_id 
+                FROM libros_categorias 
+                WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_update_libro_categoria",
+            """
+            CREATE PROCEDURE proc_update_libro_categoria(
+                IN p_LibroId INT,
+                IN p_CategoriaId INT,
+                IN p_NuevoLibroId INT,
+                IN p_NuevaCategoriaId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM libros_categorias 
+                    WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId
+                ) THEN
+                    UPDATE libros_categorias 
+                    SET libro_id = p_NuevoLibroId, categoria_id = p_NuevaCategoriaId
+                    WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId;
+                    SET p_Respuesta = 1;
+                ELSE
+                    SET p_Respuesta = 2; -- No existe la relación original
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_delete_libro_categoria",
+            """
+            CREATE PROCEDURE proc_delete_libro_categoria(
+                IN p_LibroId INT,
+                IN p_CategoriaId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM libros_categorias 
+                    WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId
+                ) THEN
+                    DELETE FROM libros_categorias 
+                    WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId;
+                    SET p_Respuesta = 1;
+                ELSE
+                    SET p_Respuesta = 2; -- No existe la relación
+                END IF;
+            END;
             """,
 
             #AUTORES
