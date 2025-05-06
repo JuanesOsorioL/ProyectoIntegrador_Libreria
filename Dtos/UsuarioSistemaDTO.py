@@ -1,9 +1,10 @@
 class UsuarioSistemaDTO:
-    def __init__(self, id=None, usuario_id=None, nombre_usuario=None, contrasena=None):
+    def __init__(self, id=None, usuario_id=None, nombre_usuario=None, contrasena=None, rolId=None):
         self.id = id
         self.usuario_id = usuario_id
         self.nombre_usuario = nombre_usuario
         self.contrasena = contrasena
+        self.rolId = rolId
 
 
     def get_id(self):
@@ -17,6 +18,12 @@ class UsuarioSistemaDTO:
 
     def get_contrasena(self):
         return self.contrasena
+    
+    def get_rol_id(self):
+        return self.rolId
+    
+    def set_rol_id(self, value):
+        self.rolId = value
 
     def set_id(self, value):
         self.id = value

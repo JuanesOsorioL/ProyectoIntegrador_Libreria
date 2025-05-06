@@ -186,6 +186,40 @@ CREATE TABLE IF NOT EXISTS usuarios_sistema (
 );
 
 -- ============================================
+-- 3) Consultar por hmac
+-- ============================================
+DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_select_usuarios_sistema_por_hmac $$
+CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
+    IN p_hmac INT
+)
+BEGIN
+    SELECT
+        us.id,
+        us.usuario_id,
+        us.nombre_usuario,
+        us.nombre_usuario_hmac,
+        us.contrasena,
+        us.salt,
+        u.rol_id
+       FROM usuarios_sistema AS us
+    INNER JOIN usuarios AS u
+        ON us.usuario_id = u.id
+    WHERE us.nombre_usuario_hmac = p_hmac;
+END $$
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+-- ============================================
 -- 1) Insertar nuevo registro con payload MsgPack + HMAC
 -- ============================================
 DELIMITER $$

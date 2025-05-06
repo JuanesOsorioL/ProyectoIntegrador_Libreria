@@ -3,6 +3,7 @@ from Controlador.UsuarioControlador import UsuarioControlador
 from Controlador.UsuarioSistemaControlador import UsuarioSistemaControlador
 import pyodbc;
 import os
+import msgpack
 from datetime import datetime
 from Utilidades.Configuracion import Configuracion
 from Dtos.UsuarioDTO import UsuarioDTO
@@ -13,6 +14,9 @@ usuarioControlador = UsuarioControlador()
 usuarioSistemaControlador = UsuarioSistemaControlador()
 
 class Menu:
+
+    token_actual = None
+
 
     def seleccionarUnRolValido(resultado)-> int:
         ids_validos = [rol.id for rol in resultado]          
@@ -81,7 +85,7 @@ class Menu:
                 case "1":
                     os.system('cls')
                     try:
-                        
+                        print("\nRegistro:")
                         nombre = str(input("Nombre: "))
                         email = str(input("Email: "))
                         telefono = input("Teléfono: ")
@@ -114,6 +118,21 @@ class Menu:
 
                 case "2":
                     os.system('cls')
+                    print("\nLoguin:")
+                    #nombre_usuario = input("Nombre de Usuario: ")
+                    #contrasena = input("Contraseña: ")
+
+                    nombre_usuario="gggg1"
+                    contrasena="12345ggg"
+                    resultado_loguin=usuarioSistemaControlador.obtenerPorNombreUsuarioYContrasena(nombre_usuario,contrasena)
+                    
+                    data = msgpack.unpackb(resultado_loguin.get_resultado())
+                    jwt = data["token"]
+                    resultado = data["resultado"]
+
+                    resultado_loguin.set_resultado(resultado)
+                    Menu.token_actual=jwt
+                    print(resultado_loguin)
                 case "3":
                     os.system('cls')
                     print("Saliendo del programa...")
@@ -607,6 +626,28 @@ class Menu:
                 """),
 
                 # USUARIOS_SISTEMA
+
+                ("proc_select_usuarios_sistema_por_hmac", """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
+                    IN p_hmac INT
+                )
+                BEGIN
+                    SELECT
+                        us.id,
+                        us.usuario_id,
+                        us.nombre_usuario,
+                        us.nombre_usuario_hmac,
+                        us.contrasena,
+                        us.salt,
+                        u.rol_id
+                    FROM usuarios_sistema AS us
+                    INNER JOIN usuarios AS u
+                        ON us.usuario_id = u.id
+                    WHERE us.nombre_usuario_hmac = p_hmac;
+                END
+                """),
+
+
                 ("proc_delete_usuarios_sistema", """
                 CREATE PROCEDURE proc_delete_usuarios_sistema(
                     IN p_id INT,
@@ -646,16 +687,7 @@ class Menu:
                     END IF;
                 END
                 """),
-                ("proc_select_usuarios_sistema_por_hmac", """
-                CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
-                    IN p_nombre_usuario_hmac CHAR(64)
-                )
-                BEGIN
-                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
-                    FROM usuarios_sistema
-                    WHERE nombre_usuario_hmac = p_nombre_usuario_hmac;
-                END
-                """),
+         
                 ("proc_select_usuarios_sistema_por_id", """
                 CREATE PROCEDURE proc_select_usuarios_sistema_por_id(
                     IN p_id INT
@@ -1120,16 +1152,7 @@ class Menu:
                     END IF;
                 END
                 """),
-                ("proc_select_usuarios_sistema_por_hmac", """
-                CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
-                    IN p_nombre_usuario_hmac CHAR(64)
-                )
-                BEGIN
-                    SELECT id, usuario_id, nombre_usuario, nombre_usuario_hmac, contrasena, salt
-                    FROM usuarios_sistema
-                    WHERE nombre_usuario_hmac = p_nombre_usuario_hmac;
-                END
-                """),
+
                 ("proc_select_usuarios_sistema_por_id", """
                 CREATE PROCEDURE proc_select_usuarios_sistema_por_id(
                     IN p_id INT

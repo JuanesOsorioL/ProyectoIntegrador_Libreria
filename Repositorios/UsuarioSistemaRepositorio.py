@@ -15,6 +15,25 @@ class UsuarioSistemaRepositorio:
         cursor.close()
         conexion.close()
         return resultado
+    
+    def obtenerPorHmac(self, hmac: str):
+        conexion = pyodbc.connect(Configuracion.strConnection)
+        cursor = conexion.cursor()
+        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", hmac)
+        resultado = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        return resultado
+    
+
+
+
+
+
+    
+
+
+
 
     def listar(self):
         conexion = pyodbc.connect(Configuracion.strConnection)

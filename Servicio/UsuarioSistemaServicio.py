@@ -2,14 +2,18 @@ from Dtos.UsuarioSistemaDTO import UsuarioSistemaDTO
 from Mapeadores.UsuarioSistemaMapeadores import (
     dto_a_usuario_sistema,
     usuario_sistema_a_dto,
-    fila_a_usuario_sistema
+    fila_a_usuario_sistema,
+    fila_a_usuario_sistema_dto
 )
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.UsuarioSistemaRepositorio import UsuarioSistemaRepositorio
 
 from Cifrados.MD5 import MD5
 from Cifrados.AESHMAC import AESHMAC
+from Cifrados.JWT import JWT
 import msgpack
+
+jwt=JWT()
 md5=MD5()
 aeshmac=AESHMAC()
 repositorio = UsuarioSistemaRepositorio()
@@ -48,6 +52,50 @@ class UsuarioSistemaServicio:
         elif estado == YA_EXISTE:
             return Respuesta("Error", "El username ya existe", [])
         return Respuesta("Error", "Error al insertar", [])
+    
+
+
+    def obtenerPorUsernameYContrasena(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
+        fila = repositorio.obtenerPorHmac(username_hmac_value)
+        if fila:
+            entidad_resultado = fila_a_usuario_sistema(fila)
+            entidad_resultado_dto=fila_a_usuario_sistema_dto(fila)
+            validar_contrasena=md5.verificar(dto.get_contrasena(),entidad_resultado.Get_Salt(),entidad_resultado.Get_Contrasena())
+            if validar_contrasena:
+                packed=(entidad_resultado.Get_nombre_usuario())
+                data = msgpack.unpackb(packed)
+                nonce = data["nonce"]
+                tag = data["tag"]
+                ct = data["ct"]
+                desencriptarNombreUsuario=aeshmac.decrypt(ct,nonce,tag)
+                
+
+                payload = {
+                    "sub": desencriptarNombreUsuario,
+                    "roles": entidad_resultado_dto.get_rol_id()
+                }
+                jwt_code=jwt.cifrar(payload)
+                dto_resultado = usuario_sistema_a_dto(entidad_resultado,desencriptarNombreUsuario)
+
+                respuesta_jwt = msgpack.packb({
+                    "token": jwt_code,
+                    "resultado": str(dto_resultado)
+                })
+
+
+
+                
+                return Respuesta("Operación Exitosa", "Encontrado", respuesta_jwt)
+            else:
+                return Respuesta("Error", "Contraseña invalida", [])
+        else:
+            return Respuesta("Error", "Usuario no Existe", [])
+
+
+
+
+
 
     def listar(self) -> Respuesta:
         lista = repositorio.listar()
