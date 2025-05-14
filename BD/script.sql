@@ -7,6 +7,124 @@ FLUSH PRIVILEGES;
 
 
 
+--tabla roles
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre BLOB NOT NULL,
+    nombre_hmac CHAR(64) NOT NULL UNIQUE
+);
+
+
+
+
+
+
+
+--insertar rol
+DELIMITER $$
+
+CREATE PROCEDURE `proc_insert_rol`(
+    IN p_Nombre BLOB,
+    IN p_NombreHmac CHAR(64),
+    OUT p_NuevoId INT,
+    OUT p_Respuesta INT
+)
+BEGIN
+    IF EXISTS (SELECT 1 FROM Libreria.roles WHERE nombre_hmac = p_NombreHmac) THEN
+        SET p_Respuesta = 2;
+        SET p_NuevoId = NULL;
+    ELSE
+        INSERT INTO Libreria.roles (nombre, nombre_hmac) VALUES (p_Nombre, p_NombreHmac);
+        SET p_NuevoId = LAST_INSERT_ID();
+        SET p_Respuesta = 1;
+    END IF;
+END$$
+
+DELIMITER ;
+
+--mostrar todos los roles
+DELIMITER $$
+CREATE PROCEDURE `proc_select_rol`(
+    INOUT p_Respuesta INT
+)
+BEGIN
+    SELECT id, nombre, nombre_hmac FROM Libreria.roles;
+    SET p_Respuesta = 1;
+END$$
+DELIMITER ;
+
+--buscar rol por id
+DELIMITER $$
+
+CREATE PROCEDURE `proc_select_rol_por_id` (
+    IN p_id INT
+)
+BEGIN
+    SELECT id, nombre, nombre_hmac
+    FROM Libreria.roles
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+--actualizar rol
+DELIMITER $$
+
+CREATE PROCEDURE `proc_update_rol`(
+    IN p_Id INT,
+    IN p_Nombre BLOB,
+    IN p_NombreHmac CHAR(64),
+    INOUT p_Respuesta INT
+)
+BEGIN
+    IF EXISTS (SELECT 1 FROM Libreria.roles WHERE id = p_Id) THEN
+        UPDATE Libreria.roles
+        SET nombre = p_Nombre,
+            nombre_hmac = p_NombreHmac
+        WHERE id = p_Id;
+
+        SET p_Respuesta = 1;
+    ELSE
+        SET p_Respuesta = 2;
+    END IF;
+END$$
+
+DELIMITER ;
+
+--borrar rol
+DELIMITER $$
+
+CREATE PROCEDURE `proc_delete_rol`(
+    IN p_id INT,
+    INOUT p_Respuesta INT
+)
+BEGIN
+    IF EXISTS (SELECT 1 FROM Libreria.roles WHERE id = p_id) THEN
+        DELETE FROM Libreria.roles WHERE id = p_id;
+        SET p_Respuesta = 1;
+    ELSE
+        SET p_Respuesta = 2;
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 --tabla usuarios
 CREATE TABLE usuarios (
@@ -20,31 +138,77 @@ CREATE TABLE usuarios (
     FOREIGN KEY (rol_id) REFERENCES roles(id)
 );
 
+
+
+
+
+
+
+
+
+
+
+
+--tabla usuarios
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre BLOB NOT NULL,
+    nombre_hmac CHAR(64) NOT NULL,
+    email BLOB NOT NULL,
+    email_hmac CHAR(64) NOT NULL UNIQUE,
+    telefono BLOB NOT NULL,
+    telefono_hmac CHAR(64) NOT NULL,
+    direccion BLOB NOT NULL,
+    direccion_hmac CHAR(64) NOT NULL,
+    fecha_registro DATE DEFAULT CURRENT_DATE,
+    rol_id INT,
+    FOREIGN KEY (rol_id) REFERENCES roles(id)
+);
+
+
+
 --insertar 
 DELIMITER $$
 CREATE PROCEDURE `proc_insert_usuario`(
-    IN p_nombre VARCHAR(100),
-    IN p_email VARCHAR(100),
-    IN p_telefono VARCHAR(20),
-    IN p_direccion VARCHAR(255),
-    IN p_fecha_registro DATE,
+    IN p_nombre BLOB,
+    IN p_nombre_hmac CHAR(64),
+    IN p_email BLOB,
+    IN p_email_hmac CHAR(64),
+    IN p_telefono BLOB,
+    IN p_telefono_hmac CHAR(64),
+    IN p_direccion BLOB,
+    IN p_direccion_hmac CHAR(64),
     IN p_rol_id INT,
     OUT p_nuevo_id INT,
     OUT p_respuesta INT
 )
 BEGIN
-    IF EXISTS (SELECT 1 FROM usuarios WHERE email = p_email) THEN
+    IF EXISTS (SELECT 1 FROM usuarios WHERE email_hmac = p_email_hmac) THEN
         SET p_respuesta = 2;
         SET p_nuevo_id = NULL;
     ELSE
-        INSERT INTO usuarios (nombre, email, telefono, direccion, fecha_registro, rol_id)
-        VALUES (p_nombre, p_email, p_telefono, p_direccion, p_fecha_registro, p_rol_id);
-        
+        INSERT INTO usuarios (
+            nombre, nombre_hmac,
+            email, email_hmac,
+            telefono, telefono_hmac,
+            direccion, direccion_hmac,
+            rol_id
+        )
+        VALUES (
+            p_nombre, p_nombre_hmac,
+            p_email, p_email_hmac,
+            p_telefono, p_telefono_hmac,
+            p_direccion, p_direccion_hmac,
+            p_rol_id
+        );
+
         SET p_nuevo_id = LAST_INSERT_ID();
         SET p_respuesta = 1;
     END IF;
 END$$
 DELIMITER ;
+
+
 
 --mostrar todos los usuarios
 DELIMITER $$
@@ -52,12 +216,27 @@ CREATE PROCEDURE `proc_select_usuarios`(
     INOUT p_respuesta INT
 )
 BEGIN
-    SELECT id, nombre, email, telefono, direccion, fecha_registro, rol_id
+    SELECT 
+        id,
+        nombre,
+        nombre_hmac,
+        email,
+        email_hmac,
+        telefono,
+        telefono_hmac,
+        direccion,
+        direccion_hmac,
+        fecha_registro,
+        rol_id
     FROM usuarios;
 
     SET p_respuesta = 1;
 END$$
 DELIMITER ;
+
+
+
+
 
 --mostrar por id
 DELIMITER $$
@@ -65,20 +244,39 @@ CREATE PROCEDURE `proc_select_usuario_por_id`(
     IN p_id INT
 )
 BEGIN
-    SELECT id, nombre, email, telefono, direccion, fecha_registro, rol_id
+    SELECT 
+        id,
+        nombre,
+        nombre_hmac,
+        email,
+        email_hmac,
+        telefono,
+        telefono_hmac,
+        direccion,
+        direccion_hmac,
+        fecha_registro,
+        rol_id
     FROM usuarios
     WHERE id = p_id;
 END$$
 DELIMITER ;
 
+
+
+
+
 --actualizar por id
 DELIMITER $$
 CREATE PROCEDURE `proc_update_usuario`(
     IN p_id INT,
-    IN p_nombre VARCHAR(100),
-    IN p_email VARCHAR(100),
-    IN p_telefono VARCHAR(20),
-    IN p_direccion VARCHAR(255),
+    IN p_nombre BLOB,
+    IN p_nombre_hmac CHAR(64),
+    IN p_email BLOB,
+    IN p_email_hmac CHAR(64),
+    IN p_telefono BLOB,
+    IN p_telefono_hmac CHAR(64),
+    IN p_direccion BLOB,
+    IN p_direccion_hmac CHAR(64),
     IN p_fecha_registro DATE,
     IN p_rol_id INT,
     INOUT p_respuesta INT
@@ -86,10 +284,15 @@ CREATE PROCEDURE `proc_update_usuario`(
 BEGIN
     IF EXISTS (SELECT 1 FROM usuarios WHERE id = p_id) THEN
         UPDATE usuarios
-        SET nombre = p_nombre,
+        SET 
+            nombre = p_nombre,
+            nombre_hmac = p_nombre_hmac,
             email = p_email,
+            email_hmac = p_email_hmac,
             telefono = p_telefono,
+            telefono_hmac = p_telefono_hmac,
             direccion = p_direccion,
+            direccion_hmac = p_direccion_hmac,
             fecha_registro = p_fecha_registro,
             rol_id = p_rol_id
         WHERE id = p_id;
@@ -119,24 +322,29 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+
+
 --buscar por email
 DELIMITER $$
 CREATE PROCEDURE `proc_select_usuario_por_email`(
-    IN p_email VARCHAR(100)
+    IN p_email_hmac CHAR(64)
 )
 BEGIN
     SELECT 
         id,
         nombre,
+        nombre_hmac,
         email,
+        email_hmac,
         telefono,
+        telefono_hmac,
         direccion,
+        direccion_hmac,
         fecha_registro,
         rol_id
-    FROM 
-        usuarios
-    WHERE 
-        email = p_email;
+    FROM usuarios
+    WHERE email_hmac = p_email_hmac;
 END$$
 DELIMITER ;
 
@@ -150,17 +358,32 @@ BEGIN
     SELECT 
         id,
         nombre,
+        nombre_hmac,
         email,
+        email_hmac,
         telefono,
+        telefono_hmac,
         direccion,
+        direccion_hmac,
         fecha_registro,
         rol_id
-    FROM 
-        usuarios
-    WHERE 
-        rol_id = p_rol_id;
+    FROM usuarios
+    WHERE rol_id = p_rol_id;
 END$$
 DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -389,93 +612,6 @@ DELIMITER ;
 
 
 
---tabla roles
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL
-);
-
---insertar rol
-DELIMITER $$
-CREATE PROCEDURE `proc_insert_rol`(
-    IN p_Nombre VARCHAR(50),
-    OUT p_NuevoId INT,
-    OUT p_Respuesta INT
-)
-BEGIN
-    IF EXISTS (SELECT 1 FROM Libreria.roles WHERE Nombre = p_Nombre) THEN
-        SET p_Respuesta = 2;
-        SET p_NuevoId = NULL;
-    ELSE
-        INSERT INTO Libreria.roles (Nombre) VALUES (p_Nombre);
-        SET p_NuevoId = LAST_INSERT_ID();
-        SET p_Respuesta = 1;
-    END IF;
-END$$
-DELIMITER ;
-
---mostrar todos los roles
-DELIMITER $$
-CREATE PROCEDURE `proc_select_rol`(
-    INOUT p_Respuesta INT
-)
-BEGIN
-    SELECT id, Nombre FROM Libreria.roles;
-    SET p_Respuesta = 1;
-END$$
-DELIMITER ;
-
---buscar rol por id
-DELIMITER $$
-CREATE PROCEDURE `proc_select_rol_por_id` (
-    IN p_id INT
-)
-BEGIN
-    SELECT 
-        id,
-        Nombre
-    FROM 
-        Libreria.roles
-    WHERE 
-        id = p_id;
-END$$
-DELIMITER ;
-
---actualizar rol
-DELIMITER $$
-CREATE PROCEDURE `proc_update_rol`(
-    IN p_Id INT,
-    IN p_Nombre VARCHAR(50),
-    INOUT p_Respuesta INT
-)
-BEGIN
-    IF EXISTS (SELECT 1 FROM Libreria.roles WHERE id = p_Id) THEN
-        UPDATE Libreria.roles
-        SET Nombre = p_Nombre
-        WHERE id = p_Id;
-
-        SET p_Respuesta = 1;
-    ELSE
-        SET p_Respuesta = 2;
-    END IF;
-END$$
-DELIMITER ;
-
---borrar rol
-DELIMITER $$
-CREATE PROCEDURE `proc_delete_rol`(
-    IN p_id INT,
-    INOUT p_Respuesta INT
-)
-BEGIN
-    IF EXISTS (SELECT 1 FROM Libreria.roles WHERE id = p_id) THEN
-        DELETE FROM Libreria.roles WHERE id = p_id;
-        SET p_Respuesta = 1;
-    ELSE
-        SET p_Respuesta = 2;
-    END IF;
-END$$
-DELIMITER ;
 
 
 

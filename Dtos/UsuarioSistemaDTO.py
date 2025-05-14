@@ -1,11 +1,12 @@
+from Dtos.UsuarioDTO import UsuarioDTO
+
 class UsuarioSistemaDTO:
-    def __init__(self, id=None, usuario_id=None, nombre_usuario=None, contrasena=None, rolId=None):
+    def __init__(self, id=None, usuario_id=None, nombre_usuario=None, contrasena=None,usuarioDTO: UsuarioDTO = None):
         self.id = id
         self.usuario_id = usuario_id
         self.nombre_usuario = nombre_usuario
         self.contrasena = contrasena
-        self.rolId = rolId
-
+        self.usuarioDTO = usuarioDTO
 
     def get_id(self):
         return self.id
@@ -18,12 +19,6 @@ class UsuarioSistemaDTO:
 
     def get_contrasena(self):
         return self.contrasena
-    
-    def get_rol_id(self):
-        return self.rolId
-    
-    def set_rol_id(self, value):
-        self.rolId = value
 
     def set_id(self, value):
         self.id = value
@@ -37,5 +32,16 @@ class UsuarioSistemaDTO:
     def set_contrasena(self, value):
         self.contrasena = value
 
-    def __str__(self):
-        return f"ID = {self.id} - UsuarioID = {self.usuario_id} - nombre_usuario = {self.nombre_usuario} - Contraseña = {self.contrasena}"
+    def set_usuarioDTO(self, value:UsuarioDTO):
+        self.usuarioDTO = value
+
+    def get_usuarioDTO(self) -> UsuarioDTO:
+        return self.usuarioDTO
+
+    def to_dict(self):
+        return {
+            "id":  self.get_id(),
+            "usuarioID": self.get_usuario_id(),
+            "nombreUsuario": self.get_nombre_usuario(),
+            "usuarioDTO": self.get_usuarioDTO().to_dict()
+        }# "contrasena": self.get_contrasena(),

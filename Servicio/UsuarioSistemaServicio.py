@@ -2,8 +2,8 @@ from Dtos.UsuarioSistemaDTO import UsuarioSistemaDTO
 from Mapeadores.UsuarioSistemaMapeadores import (
     dto_a_usuario_sistema,
     usuario_sistema_a_dto,
-    fila_a_usuario_sistema,
-    fila_a_usuario_sistema_dto
+    fila_a_usuario_sistema
+
 )
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.UsuarioSistemaRepositorio import UsuarioSistemaRepositorio
@@ -13,48 +13,99 @@ from Cifrados.AESHMAC import AESHMAC
 from Cifrados.JWT import JWT
 import msgpack
 
-jwt=JWT()
-md5=MD5()
-aeshmac=AESHMAC()
 repositorio = UsuarioSistemaRepositorio()
+jwt = JWT()
+md5 = MD5()
+aeshmac = AESHMAC()
 
 EXITO = 1
 YA_EXISTE = 2
 
 class UsuarioSistemaServicio:
+     
 
-    def insertar(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
-        ct,nonce,tag=aeshmac.encrypt(dto.get_nombre_usuario())
-        username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
-        packed = msgpack.packb({
-            "nonce": nonce,
-            "tag":   tag,
-            "ct":    ct
-        })
+    def insertar(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
+        try:
+            # Cifrar contraseña con MD5
+            contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
 
-        entidad = dto_a_usuario_sistema(dto)
-        entidad.Set_Salt(salt)
-        entidad.Set_Contrasena(contrasena_cifrada)
-        entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
-        entidad.Set_nombre_usuario(packed)
+            # Cifrar username con AES-GCM + HMAC
+            packed_username,username_hmac_value=aeshmac.sellar(dto.get_nombre_usuario())
+            
+             # Mapear a la entidad y asignar valores
+            entidad = dto_a_usuario_sistema(dto)
+            entidad.Set_Salt(salt)
+            entidad.Set_Contrasena(contrasena_cifrada)
+            entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
+            entidad.Set_nombre_usuario(packed_username)
+            
+            #Insertar en la tabla usuarios_sistema
+            nuevo_id, estado = repositorio.insertar(entidad)
+            if estado != EXITO:
+                return None
+            
+            entidad.Set_Id(nuevo_id)
+            
+            # Mapear de vuelta a DTO y devolverlo
+            return usuario_sistema_a_dto(entidad)
 
-        nuevo_id, estado = repositorio.insertar(entidad)
+        
+        except Exception as ex:
+            print("falla",ex)
+            return None
+        
 
-        if estado == EXITO:
-            fila = repositorio.obtenerPorId(nuevo_id)
+    def obtenerPorUsername(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
+        try:
+            entidad = dto_a_usuario_sistema(dto)
+            username_hmac_value = AESHMAC.hmac(dto.get_nombre_usuario())
+            entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
+            fila = repositorio.obtenerPorNombreUsuario(entidad)
             if fila:
                 entidad_resultado = fila_a_usuario_sistema(fila)
                 dto_resultado = usuario_sistema_a_dto(entidad_resultado)
-                return Respuesta("Operación Exitosa", "UsuarioSistema insertado", [str(dto_resultado)])
+                return dto_resultado
             else:
-                return Respuesta("Error", "UsuarioSistema no encontrado luego de insertar", [])
-        elif estado == YA_EXISTE:
-            return Respuesta("Error", "El username ya existe", [])
-        return Respuesta("Error", "Error al insertar", [])
+                return None
+        except Exception as ex:
+            return None
+
+
+
+
+    """
+    def insertar(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
+        try:
+            print("usuario sistema entro",dto.to_dict())
+            respuesta=None
+            contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
+            ct,nonce,tag=aeshmac.encrypt(dto.get_nombre_usuario())
+            username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
+            packed = msgpack.packb({
+                "nonce": nonce,
+                "tag":   tag,
+                "ct":    ct
+            })
+
+            entidad_usuario_sistema = dto_a_usuario_sistema(dto)
+            entidad_usuario_sistema.Set_Salt(salt)
+            entidad_usuario_sistema.Set_Contrasena(contrasena_cifrada)
+            entidad_usuario_sistema.Set_nombre_Usuario_HMAC(username_hmac_value)
+            entidad_usuario_sistema.Set_nombre_usuario(packed)
+
+            nuevo_id, estado = repositorio.insertar(entidad_usuario_sistema)
+            print("usuario sistema respueta",nuevo_id, estado )
+
+            if estado == EXITO:
+                entidad_usuario_sistema.Set_Id(nuevo_id)
+                resultado_usuario_sistemaDTO = usuario_sistema_a_dto(entidad_usuario_sistema)
+                respuesta= resultado_usuario_sistemaDTO
+
+            return respuesta
+        except Exception as ex:
+            return Respuesta("Error Sistema", f"Error al registrar usuario: {ex}", [])
     
-
-
+    
     def obtenerPorUsernameYContrasena(self, dto: UsuarioSistemaDTO) -> Respuesta:
         username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
         fila = repositorio.obtenerPorHmac(username_hmac_value)
@@ -139,3 +190,56 @@ class UsuarioSistemaServicio:
         if estado == EXITO:
             return Respuesta("Operación Exitosa", "Eliminado correctamente", [])
         return Respuesta("Error", "No se pudo eliminar", [])
+    """
+    
+        
+
+
+
+
+
+
+
+
+
+
+    
+    
+
+
+
+    """
+    antes
+
+        def insertar(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        print()
+        contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
+        ct,nonce,tag=aeshmac.encrypt(dto.get_nombre_usuario())
+        username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
+        packed = msgpack.packb({
+            "nonce": nonce,
+            "tag":   tag,
+            "ct":    ct
+        })
+
+        entidad = dto_a_usuario_sistema(dto)
+        entidad.Set_Salt(salt)
+        entidad.Set_Contrasena(contrasena_cifrada)
+        entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
+        entidad.Set_nombre_usuario(packed)
+
+        nuevo_id, estado = repositorio.insertar(entidad)
+
+        if estado == EXITO:
+            fila = repositorio.obtenerPorId(nuevo_id)
+            if fila:
+                entidad_resultado = fila_a_usuario_sistema(fila)
+                dto_resultado = usuario_sistema_a_dto(entidad_resultado)
+
+                return Respuesta("Operación Exitosa", "UsuarioSistema insertado", dto_resultado.to_dict())
+            else:
+                return Respuesta("Error", "UsuarioSistema no encontrado luego de insertar", [])
+        elif estado == YA_EXISTE:
+            return Respuesta("Error", "El username ya existe", [])
+        return Respuesta("Error", "Error al insertar", [])
+    """

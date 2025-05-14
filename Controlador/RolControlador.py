@@ -5,7 +5,11 @@ from Dtos.Generico.Respuesta import Respuesta
 rolServicio:RolServicio=RolServicio();
 
 class RolControlador:
-    
+
+    def creartablasprocedimientos():
+        rolServicio.creartablasprocedimientos()
+
+    """
     def insertarRol(self, nombre: str) -> Respuesta:
         rolDTO = RolDTO(None, nombre)
         return rolServicio.insertarRol(rolDTO)
@@ -27,3 +31,7 @@ class RolControlador:
     def borrarRol(self, id:int) -> Respuesta:
         rolDTO = RolDTO(id=id, nombre="")
         return rolServicio.borrarRol(rolDTO)
+        
+    """
+    
+    

@@ -2,40 +2,20 @@ from Servicio.UsuarioSistemaServicio import UsuarioSistemaServicio
 from Dtos.UsuarioSistemaDTO import UsuarioSistemaDTO
 from Dtos.Generico.Respuesta import Respuesta
 
-import json
-import flask
-
-app = flask.Flask(__name__)
 usuarioSistemaServicio = UsuarioSistemaServicio()
 
 class UsuarioSistemaControlador:
-    """
-        @app.route('/usuarioSistema', methods=['POST'])
-        def insertar(entrada):
-            datos = parse_json_param(entrada)
-            resp = controlador.insertar(
-                datos['usuario_id'],
-                datos['nombre_usuario'],
-                datos['contrasena']
-            )
-            return flask.jsonify(resp)
 
-    """
-
-
-
-
-
-    def insertar(self, usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
-        dto = UsuarioSistemaDTO(None,usuario_id,nombre_usuario,contrasena, None)
-        return usuarioSistemaServicio.insertar(dto)
+    #def insertar(usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
+    #    dto = UsuarioSistemaDTO(None,usuario_id,nombre_usuario,contrasena, None)
+    #    return usuarioSistemaServicio.insertar(dto)
     
-    def obtenerPorNombreUsuarioYContrasena(self, nombre_usuario: str, contrasena: str) -> Respuesta:
+    def obtenerPorNombreUsuarioYContrasena(nombre_usuario: str, contrasena: str) -> Respuesta:
         dto = UsuarioSistemaDTO(None, None, nombre_usuario, contrasena, None)
         return usuarioSistemaServicio.obtenerPorUsernameYContrasena(dto)
 
 
-###
+###de aca hacia abajo por verificar
     def listar(self) -> Respuesta:
         return usuarioSistemaServicio.listar()
 

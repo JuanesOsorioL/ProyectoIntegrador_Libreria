@@ -1,11 +1,11 @@
 from Entidades.Rol import Rol
 from Dtos.RolDTO import RolDTO
-#Rol
-def rol_a_dto(rol: Rol) -> RolDTO:
-    return RolDTO(id=rol.id, nombre=rol.nombre)
 
-def dto_a_rol(rol_dto: RolDTO) -> Rol:
-    return Rol(id=rol_dto.id, nombre=rol_dto.nombre)
+def rol_a_dto(rol: Rol) -> RolDTO:
+    return RolDTO(rol.GetId(), rol.GetNombre())
+
+def dto_a_rol(dto: RolDTO) -> Rol:
+    return Rol(dto.GetId(), dto.GetNombre(),None)
 
 def fila_a_rol(fila: tuple) -> Rol:
-    return Rol(id=fila[0], nombre=fila[1])
+    return Rol(fila[0], fila[1], fila[2])

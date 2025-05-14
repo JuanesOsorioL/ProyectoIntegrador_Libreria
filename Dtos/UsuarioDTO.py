@@ -1,6 +1,7 @@
+from Dtos.RolDTO import RolDTO
 class UsuarioDTO:
     
-    def __init__(self, id=None, nombre="", email="", telefono="", direccion="", fechaRegistro=None, rolId=None):
+    def __init__(self, id=None, nombre=None, email=None, telefono=None, direccion=None, fechaRegistro=None, rolId=None, rolDTO: RolDTO = None):
         self.id = id
         self.nombre = nombre
         self.email = email
@@ -8,6 +9,7 @@ class UsuarioDTO:
         self.direccion = direccion
         self.fechaRegistro = fechaRegistro
         self.rolId = rolId
+        self.rolDTO = rolDTO
 
     def Get_Id(self):
         return self.id
@@ -51,9 +53,40 @@ class UsuarioDTO:
     def Set_RolId(self, value):
         self.rolId = value
 
-    def __str__(self):
-        return (
-            f"Usuario(id={self.id}, Nombre='{self.nombre}', Email='{self.email}', "
-            f"Telefono='{self.telefono}', Direccion='{self.direccion}', "
-            f"Fecha de Registro={self.fechaRegistro}, Rol ID ={self.rolId})"
-        )
+    def Get_RolDTO(self) -> RolDTO:
+        return self.rolDTO
+
+    def Set_RolDTO(self, value: RolDTO) -> None:
+        self.rolDTO = value
+
+
+
+
+
+    """
+        def to_dict(self):
+        return {
+            "id":             self.Get_Id(),
+            "nombre":         self.Get_Nombre().decode() if isinstance(self.Get_Nombre(), bytes) else self.Get_Nombre(),
+            "email":          self.Get_Email().decode() if isinstance(self.Get_Email(), bytes) else self.Get_Email(),
+            "telefono":       self.Get_Telefono().decode() if isinstance(self.Get_Telefono(), bytes) else self.Get_Telefono(),
+            "direccion":      self.Get_Direccion().decode() if isinstance(self.Get_Direccion(), bytes) else self.Get_Direccion(),
+            "fechaRegistro":  self.Get_FechaRegistro(),
+            "rolId":          self.Get_RolId(),
+            "RolDTO": self.Get_RolDTO().to_dict() if self.Get_RolDTO() else None
+        }
+    
+    """
+
+
+    def to_dict(self):
+        return {
+            "id":             self.Get_Id(),
+            "nombre":         self.Get_Nombre(),
+            "email":          self.Get_Email(),
+            "telefono":       self.Get_Telefono(),
+            "direccion":      self.Get_Direccion(),
+            "fechaRegistro":  self.Get_FechaRegistro(),
+            "rolId":          self.Get_RolId(),
+            "RolDTO": self.Get_RolDTO().to_dict()
+        }

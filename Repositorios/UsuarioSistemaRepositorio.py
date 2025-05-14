@@ -16,6 +16,28 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     def obtenerPorHmac(self, hmac: str):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
@@ -53,10 +75,10 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
 
-    def obtenerPorNombreUsuario(self, nombre_usuario: str):
+    def obtenerPorNombreUsuario(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", nombre_usuario)
+        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", usuario.Get_nombre_Usuario_HMAC())
         resultado = cursor.fetchone()
         cursor.close()
         conexion.close()
