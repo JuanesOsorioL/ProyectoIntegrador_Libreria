@@ -18,4 +18,4 @@ class MD5:
         raw = salt + contrasena
         hash_tmp = hashlib.md5(raw.encode('utf-8')).hexdigest()
         return hash_tmp == hash_guardado
-    #return hashlib.md5((salt + password).encode('utf-8')).hexdigest() == hashed
+

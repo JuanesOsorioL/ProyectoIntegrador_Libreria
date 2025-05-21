@@ -131,8 +131,7 @@ class CrearBDRepositorio:
                     nombre_usuario_hmac CHAR(64) NOT NULL UNIQUE,
                     contrasena CHAR(64) NOT NULL,
                     salt CHAR(32) NOT NULL,
-                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-                ) ENGINE=InnoDB;
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE)
                 """,
                 # Ventas
                 """
@@ -540,6 +539,24 @@ class CrearBDRepositorio:
                         SET p_nuevo_id  = LAST_INSERT_ID();
                         SET p_respuesta = 1;
                     END IF;
+                END
+                """),
+                ("proc_select_usuarios_sistema_por_hmac", """
+                CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
+                    IN p_hmac CHAR(64)
+                )
+                BEGIN
+                    SELECT 
+                        us.id,
+                        us.usuario_id,
+                        us.nombre_usuario,
+                        us.nombre_usuario_hmac,
+                        us.contrasena,
+                        us.salt,
+                        u.rol_id
+                    FROM usuarios_sistema us
+                    INNER JOIN usuarios u ON us.usuario_id = u.id
+                    WHERE nombre_usuario_hmac = p_hmac;
                 END
                 """)
             ]

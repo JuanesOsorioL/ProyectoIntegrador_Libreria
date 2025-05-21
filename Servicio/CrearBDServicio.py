@@ -25,7 +25,7 @@ class CrearBDServicio:
             return Respuesta("Error Sistema", msg, [])
 
         # 4. INSERTAR ROLES INICIALES
-        for nombre in ("Administrador", "Usuario"):
+        for nombre in ("Administrador", "Empleado", "cliente"):
             rolDTO = RolDTO(None, nombre)
             resp = RolServicio.insertarRol(rolDTO)
             if not (isinstance(resp, Respuesta) and resp.get_estado() == "Operación Exitosa"):

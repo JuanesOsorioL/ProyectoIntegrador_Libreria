@@ -58,6 +58,8 @@ class UsuarioSistema:
             "id":  self.Get_Id(),
             "usuarioID": self.Get_UsuarioId(),
             "nombreUsuario": self.Get_nombre_usuario(),
-            "contrasena": self.Get_Contrasena(),
-            "usuarioDTO": self.Get_Usuario()
+            "temporal hmac": self.Get_nombre_Usuario_HMAC(),
+            "temporal salt": self.Get_Salt(),
+            "contrasena": self.Get_Contrasena()#,
+            #"usuarioDTO": self.Get_Usuario()
         }

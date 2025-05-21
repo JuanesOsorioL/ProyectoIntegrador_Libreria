@@ -5,7 +5,9 @@ GRANT ALL PRIVILEGES ON libreria.* TO 'user_ptyhon'@'localhost';
 FLUSH PRIVILEGES;
 
 
-
+SELECT user, host FROM mysql.user WHERE user = 'user_ptyhon';
+GRANT ALL PRIVILEGES ON libreria.* TO 'user_ptyhon'@'localhost';
+FLUSH PRIVILEGES;
 
 --tabla roles
 CREATE TABLE roles (
@@ -123,20 +125,6 @@ DELIMITER ;
 
 
 
-
-
-
---tabla usuarios
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    telefono VARCHAR(20),
-    direccion VARCHAR(255),
-    fecha_registro DATE DEFAULT CURRENT_DATE,
-    rol_id INT,
-    FOREIGN KEY (rol_id) REFERENCES roles(id)
-);
 
 
 
@@ -405,7 +393,7 @@ CREATE TABLE IF NOT EXISTS usuarios_sistema (
     nombre_usuario_hmac CHAR(64) NOT NULL UNIQUE,
     contrasena VARCHAR(32) NOT NULL,
     salt VARCHAR(32) NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
 -- ============================================
@@ -414,10 +402,10 @@ CREATE TABLE IF NOT EXISTS usuarios_sistema (
 DELIMITER $$
 DROP PROCEDURE IF EXISTS proc_select_usuarios_sistema_por_hmac $$
 CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
-    IN p_hmac INT
+    IN p_hmac CHAR(64)
 )
 BEGIN
-    SELECT
+    SELECT 
         us.id,
         us.usuario_id,
         us.nombre_usuario,
@@ -425,13 +413,11 @@ BEGIN
         us.contrasena,
         us.salt,
         u.rol_id
-       FROM usuarios_sistema AS us
-    INNER JOIN usuarios AS u
-        ON us.usuario_id = u.id
-    WHERE us.nombre_usuario_hmac = p_hmac;
+    FROM usuarios_sistema us
+    INNER JOIN usuarios u ON us.usuario_id = u.id
+    WHERE nombre_usuario_hmac = p_hmac;
 END $$
 DELIMITER ;
-
 
 
 
@@ -514,26 +500,7 @@ BEGIN
 END $$
 DELIMITER ;
 
--- ============================================
--- 4) Consultar por HMAC (indicador único)
--- ============================================
-DELIMITER $$
-DROP PROCEDURE IF EXISTS proc_select_usuarios_sistema_por_hmac $$
-CREATE PROCEDURE proc_select_usuarios_sistema_por_hmac(
-    IN p_username_hmac CHAR(64)
-)
-BEGIN
-    SELECT
-        id,
-        usuario_id,
-        username_payload,
-        username_hmac,
-        contrasena,
-        salt
-      FROM usuarios_sistema
-     WHERE username_hmac = p_username_hmac;
-END $$
-DELIMITER ;
+
 
 -- ============================================
 -- 5) Actualizar un registro existente
@@ -592,6 +559,78 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+{
+    "direccion": "calle 63 # 55-70",
+    "email": "juanesosorio@hotmail.com",
+    "nombre": "juan esteban osorio lopera",
+    "rolId": 1,
+    "telefono": "3174738789",
+    "nombreUsuario": "juanes123",
+    "contrasena": "abcd123"
+}
+
+
+
+{
+    "direccion": "calle 63 # 55-70",
+    "email": "nohemyloipera@hotmail.com",
+    "nombre": "nohemy lopera herrera",
+    "rolId": 2,
+    "telefono": "3174738789",
+    "nombreUsuario": "nohe123",
+    "contrasena": "abcd123"
+}
+
+
+
+{
+    "direccion": "calle 63 # 55-70",
+    "email": "salome@hotmail.com",
+    "nombre": "salome ramirez",
+    "rolId": 3,
+    "telefono": "3174738789",
+    "nombreUsuario": "salo123",
+    "contrasena": "abcd123"
+}
+
+{
+    "direccion": "calle 44",
+    "email": "carlos@hotmail.com",
+    "nombre": "carlos lopez",
+    "fechaRegistro": "2222-02-02",
+    "rolId": 1,
+    "telefono": "123456789"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

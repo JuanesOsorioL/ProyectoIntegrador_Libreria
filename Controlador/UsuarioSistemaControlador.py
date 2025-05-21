@@ -6,13 +6,18 @@ usuarioSistemaServicio = UsuarioSistemaServicio()
 
 class UsuarioSistemaControlador:
 
+    def obtenerPorNombreUsuarioYContrasena(self,nombre_usuario: str, contrasena: str) -> Respuesta:
+        dto = UsuarioSistemaDTO(None, None, nombre_usuario, contrasena, None)
+        return usuarioSistemaServicio.obtenerPorUsernameYContrasena(dto)
+
+
+
+
     #def insertar(usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
     #    dto = UsuarioSistemaDTO(None,usuario_id,nombre_usuario,contrasena, None)
     #    return usuarioSistemaServicio.insertar(dto)
     
-    def obtenerPorNombreUsuarioYContrasena(nombre_usuario: str, contrasena: str) -> Respuesta:
-        dto = UsuarioSistemaDTO(None, None, nombre_usuario, contrasena, None)
-        return usuarioSistemaServicio.obtenerPorUsernameYContrasena(dto)
+
 
 
 ###de aca hacia abajo por verificar

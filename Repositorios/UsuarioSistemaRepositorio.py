@@ -4,7 +4,7 @@ from Utilidades.Configuracion import Configuracion
 
 class UsuarioSistemaRepositorio:
 
-    def insertar(self, usuario: UsuarioSistema):
+    def insertarUsuariosistema(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
         consulta = "{CALL proc_insert_usuarios_sistema(?,?,?,?,?, @p_nuevo_id, @p_respuesta)}"
@@ -16,37 +16,40 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    def obtenerPorHmac(self, hmac: str):
+    def obtenerPorNombreUsuarioHmac(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", hmac)
+        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", usuario.Get_nombre_Usuario_HMAC())
         resultado = cursor.fetchone()
         cursor.close()
         conexion.close()
         return resultado
     
+    
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -75,14 +78,7 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
 
-    def obtenerPorNombreUsuario(self, usuario: UsuarioSistema):
-        conexion = pyodbc.connect(Configuracion.strConnection)
-        cursor = conexion.cursor()
-        cursor.execute("{CALL proc_select_usuarios_sistema_por_hmac(?)}", usuario.Get_nombre_Usuario_HMAC())
-        resultado = cursor.fetchone()
-        cursor.close()
-        conexion.close()
-        return resultado
+
 
     def actualizar(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)

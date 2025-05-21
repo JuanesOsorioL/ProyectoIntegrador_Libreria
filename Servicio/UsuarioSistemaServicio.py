@@ -3,15 +3,13 @@ from Mapeadores.UsuarioSistemaMapeadores import (
     dto_a_usuario_sistema,
     usuario_sistema_a_dto,
     fila_a_usuario_sistema
-
 )
+from Mapeadores.UsuarioMapeadores import (fila_a_usuario_only_rolID)
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.UsuarioSistemaRepositorio import UsuarioSistemaRepositorio
-
 from Cifrados.MD5 import MD5
 from Cifrados.AESHMAC import AESHMAC
 from Cifrados.JWT import JWT
-import msgpack
 
 repositorio = UsuarioSistemaRepositorio()
 jwt = JWT()
@@ -23,44 +21,35 @@ YA_EXISTE = 2
 
 class UsuarioSistemaServicio:
      
-
-    def insertar(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
+    def insertarUsuariosistema(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
         try:
             # Cifrar contraseña con MD5
             contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
-
             # Cifrar username con AES-GCM + HMAC
             packed_username,username_hmac_value=aeshmac.sellar(dto.get_nombre_usuario())
-            
              # Mapear a la entidad y asignar valores
             entidad = dto_a_usuario_sistema(dto)
             entidad.Set_Salt(salt)
             entidad.Set_Contrasena(contrasena_cifrada)
             entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
             entidad.Set_nombre_usuario(packed_username)
-            
             #Insertar en la tabla usuarios_sistema
-            nuevo_id, estado = repositorio.insertar(entidad)
+            nuevo_id, estado = repositorio.insertarUsuariosistema(entidad)
             if estado != EXITO:
                 return None
-            
             entidad.Set_Id(nuevo_id)
-            
             # Mapear de vuelta a DTO y devolverlo
             return usuario_sistema_a_dto(entidad)
-
-        
         except Exception as ex:
-            print("falla",ex)
             return None
         
 
     def obtenerPorUsername(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
         try:
             entidad = dto_a_usuario_sistema(dto)
-            username_hmac_value = AESHMAC.hmac(dto.get_nombre_usuario())
+            username_hmac_value = aeshmac.hmac(entidad.Get_nombre_usuario())
             entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
-            fila = repositorio.obtenerPorNombreUsuario(entidad)
+            fila = repositorio.obtenerPorNombreUsuarioHmac(entidad)
             if fila:
                 entidad_resultado = fila_a_usuario_sistema(fila)
                 dto_resultado = usuario_sistema_a_dto(entidad_resultado)
@@ -69,6 +58,93 @@ class UsuarioSistemaServicio:
                 return None
         except Exception as ex:
             return None
+        
+        
+    def obtenerPorUsernameYContrasena(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        try:
+            entidad = dto_a_usuario_sistema(dto)
+            username_hmac_value = aeshmac.hmac(entidad.Get_nombre_usuario())
+            entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
+            fila = repositorio.obtenerPorNombreUsuarioHmac(entidad)
+            if fila:
+                entidad_resultado = fila_a_usuario_sistema(fila)
+                usuario=fila_a_usuario_only_rolID(fila)
+
+                if not md5.verificar(dto.get_contrasena(),entidad_resultado.Get_Salt(),entidad_resultado.Get_Contrasena()):
+                    return Respuesta("Error", "Usuario no encontrado1", [])
+                
+                payload = {
+                        "username": entidad.Get_nombre_usuario(),
+                        "rol": usuario.Get_RolId()
+                    }
+                jwt_code = JWT.cifrar(payload)
+
+                return Respuesta("Operación Exitosa", "Usuario Logueado", f"Bienvenido {entidad.Get_nombre_usuario()}", jwt_code)
+            else:
+                return Respuesta("Error", "Usuario no encontrado", [])
+        except Exception as ex:
+            return Respuesta("Error", f"Excepción durante validación {ex}", [])
+
+
+
+
+
+
+    """
+        entidad_resultado_dto=fila_a_usuario_sistema_dto(fila)
+    validar_contrasena=md5.verificar(dto.get_contrasena(),entidad_resultado.Get_Salt(),entidad_resultado.Get_Contrasena())
+    if validar_contrasena:
+        packed=(entidad_resultado.Get_nombre_usuario())
+        data = msgpack.unpackb(packed)
+        nonce = data["nonce"]
+        tag = data["tag"]
+        ct = data["ct"]
+        desencriptarNombreUsuario=aeshmac.decrypt(ct,nonce,tag)
+        
+
+        payload = {
+            "sub": desencriptarNombreUsuario,
+            "roles": entidad_resultado_dto.get_rol_id()
+        }
+        jwt_code=jwt.cifrar(payload)
+        dto_resultado = usuario_sistema_a_dto(entidad_resultado,desencriptarNombreUsuario)
+
+        respuesta_jwt = msgpack.packb({
+            "token": jwt_code,
+            "resultado": str(dto_resultado)
+        })
+
+
+
+        
+        return Respuesta("Operación Exitosa", "Encontrado", respuesta_jwt)
+    else:
+        return Respuesta("Error", "Contraseña invalida", [])
+    """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

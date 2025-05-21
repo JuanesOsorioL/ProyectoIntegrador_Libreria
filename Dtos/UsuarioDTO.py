@@ -59,25 +59,16 @@ class UsuarioDTO:
     def Set_RolDTO(self, value: RolDTO) -> None:
         self.rolDTO = value
 
-
-
-
-
-    """
-        def to_dict(self):
+    def to_dict_simple(self):
         return {
             "id":             self.Get_Id(),
-            "nombre":         self.Get_Nombre().decode() if isinstance(self.Get_Nombre(), bytes) else self.Get_Nombre(),
-            "email":          self.Get_Email().decode() if isinstance(self.Get_Email(), bytes) else self.Get_Email(),
-            "telefono":       self.Get_Telefono().decode() if isinstance(self.Get_Telefono(), bytes) else self.Get_Telefono(),
-            "direccion":      self.Get_Direccion().decode() if isinstance(self.Get_Direccion(), bytes) else self.Get_Direccion(),
+            "nombre":         self.Get_Nombre(),
+            "email":          self.Get_Email(),
+            "telefono":       self.Get_Telefono(),
+            "direccion":      self.Get_Direccion(),
             "fechaRegistro":  self.Get_FechaRegistro(),
-            "rolId":          self.Get_RolId(),
-            "RolDTO": self.Get_RolDTO().to_dict() if self.Get_RolDTO() else None
+            "rolId":          self.Get_RolId()
         }
-    
-    """
-
 
     def to_dict(self):
         return {
@@ -90,3 +81,4 @@ class UsuarioDTO:
             "rolId":          self.Get_RolId(),
             "RolDTO": self.Get_RolDTO().to_dict()
         }
+    

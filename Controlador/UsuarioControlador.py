@@ -8,43 +8,31 @@ usuarioServicio= UsuarioServicio()
 
 class UsuarioControlador:
 
-    def insertarUsuario(nombre: str, email: str, telefono: str, direccion: str, rol_id: int,nombre_usuario: str, contrasena: str) -> Respuesta:
+    def insertarUsuario(self,nombre: str, email: str, telefono: str, direccion: str, rol_id: int,nombre_usuario: str, contrasena: str) -> Respuesta:
         roldto=RolDTO(rol_id,None)
         usuarioDTO = UsuarioDTO(None,nombre,email,telefono,direccion,None,rol_id,roldto)
         usuarioSistemaDTO=UsuarioSistemaDTO(None,None,nombre_usuario,contrasena,usuarioDTO)
-        return usuarioServicio.insertar(usuarioSistemaDTO)
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def mostrarTodosLosUsuarios(self) -> Respuesta:
-        return usuarioServicio.listar()
+        return usuarioServicio.insertarUsuario(usuarioSistemaDTO)
 
     def mostrarUsuarioPorId(self,id: int) -> Respuesta:
         usuarioDTO = UsuarioDTO(id,None,None,None,None,None,None)
-        return usuarioServicio.obtenerPorId(usuarioDTO)
+        return usuarioServicio.obtenerUsuarioPorId(usuarioDTO)
+
+    def mostrarTodosLosUsuarios(self) -> Respuesta:
+        return usuarioServicio.listarUsuarios()
 
     def mostrarUsuarioPorEmail(self,email: str) -> Respuesta:
-        usuarioDTO = UsuarioDTO(None,None,email,None,None,None,None)
-        return usuarioServicio.obtenerPorEmail(usuarioDTO)
-    
+        usuarioDTO = UsuarioDTO(None,None,email,None,None,None,None,None)
+        return usuarioServicio.obtenerUsuarioPorEmail(usuarioDTO)
+
     def mostrarUsuarioPorRolId(self,id: int) -> Respuesta:
-        usuarioDTO = UsuarioDTO(None,None,None,None,None,None,id)
-        return usuarioServicio.obtenerPorRolId(usuarioDTO)
+        usuarioDTO = UsuarioDTO(None,None,None,None,None,None,id,None)
+        return usuarioServicio.obtenerUsuariosPorRolId(usuarioDTO)
 
     def actualizarUsuario(self,id: int, nombre: str, email: str, telefono: str, direccion: str, fecha_registro: str, rol_id: int) -> Respuesta:
-        usuarioDTO = UsuarioDTO(id,nombre,email,telefono,direccion,fecha_registro,rol_id)
-        return usuarioServicio.actualizar(usuarioDTO)
+        usuarioDTO = UsuarioDTO(id,nombre,email,telefono,direccion,fecha_registro,rol_id,None)
+        return usuarioServicio.actualizarUsuario(usuarioDTO)
 
     def borrarUsuario(self,id: int) -> Respuesta:
         usuarioDTO = UsuarioDTO(id,None,None,None,None,None,None)
-        return usuarioServicio.borrar(usuarioDTO)
+        return usuarioServicio.borrarUsuario(usuarioDTO)
