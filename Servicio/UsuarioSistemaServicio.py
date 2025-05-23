@@ -43,7 +43,6 @@ class UsuarioSistemaServicio:
         except Exception as ex:
             return None
         
-
     def obtenerPorUsername(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
         try:
             entidad = dto_a_usuario_sistema(dto)
@@ -59,7 +58,6 @@ class UsuarioSistemaServicio:
         except Exception as ex:
             return None
         
-        
     def obtenerPorUsernameYContrasena(self, dto: UsuarioSistemaDTO) -> Respuesta:
         try:
             entidad = dto_a_usuario_sistema(dto)
@@ -71,7 +69,7 @@ class UsuarioSistemaServicio:
                 usuario=fila_a_usuario_only_rolID(fila)
 
                 if not md5.verificar(dto.get_contrasena(),entidad_resultado.Get_Salt(),entidad_resultado.Get_Contrasena()):
-                    return Respuesta("Error", "Usuario no encontrado1", [])
+                    return Respuesta("Error", "contraseña no valida", [])
                 
                 payload = {
                         "username": entidad.Get_nombre_usuario(),
@@ -85,237 +83,102 @@ class UsuarioSistemaServicio:
         except Exception as ex:
             return Respuesta("Error", f"Excepción durante validación {ex}", [])
 
-
-
-
-
-
-    """
-        entidad_resultado_dto=fila_a_usuario_sistema_dto(fila)
-    validar_contrasena=md5.verificar(dto.get_contrasena(),entidad_resultado.Get_Salt(),entidad_resultado.Get_Contrasena())
-    if validar_contrasena:
-        packed=(entidad_resultado.Get_nombre_usuario())
-        data = msgpack.unpackb(packed)
-        nonce = data["nonce"]
-        tag = data["tag"]
-        ct = data["ct"]
-        desencriptarNombreUsuario=aeshmac.decrypt(ct,nonce,tag)
-        
-
-        payload = {
-            "sub": desencriptarNombreUsuario,
-            "roles": entidad_resultado_dto.get_rol_id()
-        }
-        jwt_code=jwt.cifrar(payload)
-        dto_resultado = usuario_sistema_a_dto(entidad_resultado,desencriptarNombreUsuario)
-
-        respuesta_jwt = msgpack.packb({
-            "token": jwt_code,
-            "resultado": str(dto_resultado)
-        })
-
-
-
-        
-        return Respuesta("Operación Exitosa", "Encontrado", respuesta_jwt)
-    else:
-        return Respuesta("Error", "Contraseña invalida", [])
-    """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    """
-    def insertar(self, dto: UsuarioSistemaDTO) -> UsuarioSistemaDTO:
+    def listarUsuariosistema(self) -> Respuesta:
         try:
-            print("usuario sistema entro",dto.to_dict())
-            respuesta=None
-            contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
-            ct,nonce,tag=aeshmac.encrypt(dto.get_nombre_usuario())
-            username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
-            packed = msgpack.packb({
-                "nonce": nonce,
-                "tag":   tag,
-                "ct":    ct
-            })
-
-            entidad_usuario_sistema = dto_a_usuario_sistema(dto)
-            entidad_usuario_sistema.Set_Salt(salt)
-            entidad_usuario_sistema.Set_Contrasena(contrasena_cifrada)
-            entidad_usuario_sistema.Set_nombre_Usuario_HMAC(username_hmac_value)
-            entidad_usuario_sistema.Set_nombre_usuario(packed)
-
-            nuevo_id, estado = repositorio.insertar(entidad_usuario_sistema)
-            print("usuario sistema respueta",nuevo_id, estado )
-
-            if estado == EXITO:
-                entidad_usuario_sistema.Set_Id(nuevo_id)
-                resultado_usuario_sistemaDTO = usuario_sistema_a_dto(entidad_usuario_sistema)
-                respuesta= resultado_usuario_sistemaDTO
-
-            return respuesta
+            lista = repositorio.listarUsuariosistema()
+            dto_resultado = [usuario_sistema_a_dto(fila_a_usuario_sistema(f)) for f in lista]
+            usuarios_desencriptados = []
+            for dto in dto_resultado:
+                usuario = dto.to_dict_simple()
+                usuario["nombreUsuario"] = aeshmac.desellarlo(usuario["nombreUsuario"])
+                usuarios_desencriptados.append(usuario)
+            if usuarios_desencriptados:
+                return Respuesta("Operación Exitosa", "Usuarios del sistema encontrados", usuarios_desencriptados)
+            else:
+                return Respuesta("Operación Exitosa", "No hay usuarios del sistema registrados", [])
         except Exception as ex:
-            return Respuesta("Error Sistema", f"Error al registrar usuario: {ex}", [])
-    
-    
-    def obtenerPorUsernameYContrasena(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
-        fila = repositorio.obtenerPorHmac(username_hmac_value)
-        if fila:
-            entidad_resultado = fila_a_usuario_sistema(fila)
-            entidad_resultado_dto=fila_a_usuario_sistema_dto(fila)
-            validar_contrasena=md5.verificar(dto.get_contrasena(),entidad_resultado.Get_Salt(),entidad_resultado.Get_Contrasena())
-            if validar_contrasena:
-                packed=(entidad_resultado.Get_nombre_usuario())
-                data = msgpack.unpackb(packed)
-                nonce = data["nonce"]
-                tag = data["tag"]
-                ct = data["ct"]
-                desencriptarNombreUsuario=aeshmac.decrypt(ct,nonce,tag)
-                
+            return Respuesta("Error Sistema", f"Error al listar usuarios del sistema: {ex}", [])
 
-                payload = {
-                    "sub": desencriptarNombreUsuario,
-                    "roles": entidad_resultado_dto.get_rol_id()
-                }
-                jwt_code=jwt.cifrar(payload)
-                dto_resultado = usuario_sistema_a_dto(entidad_resultado,desencriptarNombreUsuario)
-
-                respuesta_jwt = msgpack.packb({
-                    "token": jwt_code,
-                    "resultado": str(dto_resultado)
-                })
-
-
-
-                
-                return Respuesta("Operación Exitosa", "Encontrado", respuesta_jwt)
-            else:
-                return Respuesta("Error", "Contraseña invalida", [])
-        else:
-            return Respuesta("Error", "Usuario no Existe", [])
-
-
-
-
-
-
-    def listar(self) -> Respuesta:
-        lista = repositorio.listar()
-        dtos = [str(usuario_sistema_a_dto(fila_a_usuario_sistema(f))) for f in lista]
-        return Respuesta("Operación Exitosa", "Listado de usuarios_sistema", dtos)
-
-    def obtener_por_id(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        entidad = dto_a_usuario_sistema(dto)
-        fila = repositorio.obtenerPorId(entidad.Get_Id())
-        if fila:
-            entidad_resultado = fila_a_usuario_sistema(fila)
-            dto_resultado = usuario_sistema_a_dto(entidad_resultado)
-            return Respuesta("Operación Exitosa", "Encontrado por ID", [str(dto_resultado)])
-        return Respuesta("Error", "No existe el registro", [])
-
-    def obtenerPorUsername(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        entidad = dto_a_usuario_sistema(dto)
-        fila = repositorio.obtenerPorNombreUsuario(entidad.Get_nombre_Usuario_HMAC())
-        if fila:
-            entidad_resultado = fila_a_usuario_sistema(fila)
-            dto_resultado = usuario_sistema_a_dto(entidad_resultado)
-            return Respuesta("Operación Exitosa", "Encontrado por username", [str(dto_resultado)])
-        return Respuesta("Error", "No existe ese username", [])
-
-    def actualizar(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        entidad = dto_a_usuario_sistema(dto)
-        estado = repositorio.actualizar(entidad)
-        if estado == EXITO:
-            fila = repositorio.obtenerPorId(entidad.Get_Id())
+    def obtenerUsuarioSistemaPorId(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        try:
+            entidad = dto_a_usuario_sistema(dto)
+            fila = repositorio.obtenerPorId(entidad)
             if fila:
                 entidad_resultado = fila_a_usuario_sistema(fila)
                 dto_resultado = usuario_sistema_a_dto(entidad_resultado)
-                return Respuesta("Operación Exitosa", "Actualizado", [str(dto_resultado)])
+                usuario = dto_resultado.to_dict_simple()
+                usuario["nombreUsuario"] = aeshmac.desellarlo(usuario["nombreUsuario"])
+                return Respuesta("Operación Exitosa", "Usuario del sistema encontrado por ID", usuario)
             else:
-                return Respuesta("Error", "No encontrado luego de actualizar", [])
-        return Respuesta("Error", "No se pudo actualizar", [])
+                return Respuesta("Error", "No existe el registro", [])
+        except Exception as ex:
+            return Respuesta("Error Sistema", f"Error al obtener usuario del sistema: {ex}", [])
 
-    def eliminar(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        entidad = dto_a_usuario_sistema(dto)
-        estado = repositorio.eliminar(entidad.Get_Id())
-        if estado == EXITO:
-            return Respuesta("Operación Exitosa", "Eliminado correctamente", [])
-        return Respuesta("Error", "No se pudo eliminar", [])
-    """
-    
-        
+    def obtenerPorUsernameConRespuesta(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        try:
+            entidad = dto_a_usuario_sistema(dto)
+            username_hmac = aeshmac.hmac(entidad.Get_nombre_usuario())
+            entidad.Set_nombre_Usuario_HMAC(username_hmac)
 
-
-
-
-
-
-
-
-
-
-    
-    
-
-
-
-    """
-    antes
-
-        def insertar(self, dto: UsuarioSistemaDTO) -> Respuesta:
-        print()
-        contrasena_cifrada,salt=md5.encrypt(dto.get_contrasena())
-        ct,nonce,tag=aeshmac.encrypt(dto.get_nombre_usuario())
-        username_hmac_value = aeshmac.hmac(dto.get_nombre_usuario())
-        packed = msgpack.packb({
-            "nonce": nonce,
-            "tag":   tag,
-            "ct":    ct
-        })
-
-        entidad = dto_a_usuario_sistema(dto)
-        entidad.Set_Salt(salt)
-        entidad.Set_Contrasena(contrasena_cifrada)
-        entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
-        entidad.Set_nombre_usuario(packed)
-
-        nuevo_id, estado = repositorio.insertar(entidad)
-
-        if estado == EXITO:
-            fila = repositorio.obtenerPorId(nuevo_id)
+            fila = repositorio.obtenerPorNombreUsuarioHmac(entidad)
             if fila:
                 entidad_resultado = fila_a_usuario_sistema(fila)
                 dto_resultado = usuario_sistema_a_dto(entidad_resultado)
 
-                return Respuesta("Operación Exitosa", "UsuarioSistema insertado", dto_resultado.to_dict())
+                usuario = dto_resultado.to_dict_simple()
+                usuario["nombreUsuario"] = aeshmac.desellarlo(usuario["nombreUsuario"])
+
+                return Respuesta("Operación Exitosa", "Encontrado por username", usuario)
             else:
-                return Respuesta("Error", "UsuarioSistema no encontrado luego de insertar", [])
-        elif estado == YA_EXISTE:
-            return Respuesta("Error", "El username ya existe", [])
-        return Respuesta("Error", "Error al insertar", [])
-    """
+                return Respuesta("Error", "No existe ese username", [])
+        except Exception as ex:
+            return Respuesta("Error Sistema", f"Error al buscar por username: {ex}", [])
+
+    def actualizarUsuarioSistemaPorId(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        try:
+            # Encriptar valores
+            contrasena_cifrada, salt = md5.encrypt(dto.get_contrasena())
+            packed_username, username_hmac_value = aeshmac.sellar(dto.get_nombre_usuario())
+
+            entidad = dto_a_usuario_sistema(dto)
+            fila = repositorio.obtenerPorId(entidad)
+            if fila:
+                entidad_resultado = fila_a_usuario_sistema(fila)
+                dto_resultado = usuario_sistema_a_dto(entidad_resultado)
+
+                 # Mapear entidad
+                entidad = dto_a_usuario_sistema(dto)
+                entidad.Set_UsuarioId(dto_resultado.get_usuario_id())
+                entidad.Set_Salt(salt)
+                entidad.Set_Contrasena(contrasena_cifrada)
+                entidad.Set_nombre_Usuario_HMAC(username_hmac_value)
+                entidad.Set_nombre_usuario(packed_username)
+
+                estado = repositorio.actualizarNombreUsuario(entidad)
+                if estado == EXITO:
+                    dto_resultado_actualizado=usuario_sistema_a_dto(entidad)
+                    usuario = dto_resultado_actualizado.to_dict_simple()
+                    usuario["nombreUsuario"] = aeshmac.desellarlo(usuario["nombreUsuario"])
+                    return Respuesta("Operación Exitosa", "Actualizado correctamente", usuario)
+                else:
+                    return Respuesta("Operación Fallida", "No se pudo actualizar el usuario sistema", [])
+            else:
+                return Respuesta("Error", "No existe el usuario de sistema", [])
+        except Exception as ex:
+            return Respuesta("Error Sistema", f"Error durante la actualización: {ex}", [])
+
+    def eliminarNombreUsuario(self, dto: UsuarioSistemaDTO) -> Respuesta:
+        try:
+            entidad = dto_a_usuario_sistema(dto)
+            fila = repositorio.obtenerPorId(entidad)
+            if not fila:
+                return Respuesta("Operación Fallida", "No existe el usuario sistema a eliminar", [])
+            estado = repositorio.eliminarNombreUsuario(entidad)
+            if estado == EXITO:
+                dto_resultado=usuario_sistema_a_dto(fila_a_usuario_sistema(fila))
+                usuario = dto_resultado.to_dict_simple()
+                usuario["nombreUsuario"] = aeshmac.desellarlo(usuario["nombreUsuario"])
+                return Respuesta("Operación Exitosa", "Eliminado correctamente", usuario)
+            return Respuesta("Error", "No se pudo eliminar", [])
+        except Exception as ex:
+            return Respuesta("Error Sistema", f"Error durante la eliminación: {ex}", [])

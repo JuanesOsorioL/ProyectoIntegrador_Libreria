@@ -25,42 +25,7 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
     
-    
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-    def listar(self):
+    def listarUsuariosistema(self):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
         cursor.execute("{CALL proc_select_usuarios_sistema()}")
@@ -68,19 +33,17 @@ class UsuarioSistemaRepositorio:
         cursor.close()
         conexion.close()
         return resultado
-
-    def obtenerPorId(self, id: int):
+    
+    def obtenerPorId(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        cursor.execute("{CALL proc_select_usuarios_sistema_por_id(?)}", id)
+        cursor.execute("{CALL proc_select_usuarios_sistema_por_id(?)}", usuario.Get_Id())
         resultado = cursor.fetchone()
         cursor.close()
         conexion.close()
         return resultado
 
-
-
-    def actualizar(self, usuario: UsuarioSistema):
+    def actualizarNombreUsuario(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
         cursor.execute("{CALL proc_update_usuarios_sistema(?, ?, ?, ?, ?, ?, @p_respuesta)}", (
@@ -93,10 +56,10 @@ class UsuarioSistemaRepositorio:
         conexion.close()
         return resultado
 
-    def eliminar(self, id: int):
+    def eliminarNombreUsuario(self, usuario: UsuarioSistema):
         conexion = pyodbc.connect(Configuracion.strConnection)
         cursor = conexion.cursor()
-        cursor.execute("{CALL proc_delete_usuarios_sistema(?, @p_respuesta)}", id)
+        cursor.execute("{CALL proc_delete_usuarios_sistema(?, @p_respuesta)}", usuario.Get_Id())
         cursor.execute("SELECT @p_respuesta")
         resultado = cursor.fetchone()[0]
         conexion.commit()

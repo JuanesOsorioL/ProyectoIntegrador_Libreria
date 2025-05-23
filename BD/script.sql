@@ -419,15 +419,6 @@ BEGIN
 END $$
 DELIMITER ;
 
-
-
-
-
-
-
-
-
-
 -- ============================================
 -- 1) Insertar nuevo registro con payload MsgPack + HMAC
 -- ============================================
@@ -471,11 +462,11 @@ BEGIN
     SELECT
         id,
         usuario_id,
-        username_payload,
-        username_hmac,
+        nombre_usuario,
+        nombre_usuario_hmac,
         contrasena,
         salt
-      FROM usuarios_sistema;
+    FROM usuarios_sistema;
 END $$
 DELIMITER ;
 
@@ -491,12 +482,12 @@ BEGIN
     SELECT
         id,
         usuario_id,
-        username_payload,
-        username_hmac,
+        nombre_usuario,
+        nombre_usuario_hmac,
         contrasena,
         salt
-      FROM usuarios_sistema
-     WHERE id = p_id;
+    FROM usuarios_sistema
+    WHERE id = p_id;
 END $$
 DELIMITER ;
 
@@ -508,30 +499,28 @@ DELIMITER ;
 DELIMITER $$
 DROP PROCEDURE IF EXISTS proc_update_usuarios_sistema $$
 CREATE PROCEDURE proc_update_usuarios_sistema(
-    IN     p_id                 INT,
-    IN     p_usuario_id         INT,
-    IN     p_username_payload   BLOB,
-    IN     p_username_hmac      CHAR(64),
-    IN     p_contrasena         VARCHAR(32),
-    IN     p_salt               VARCHAR(32),
-    INOUT  p_respuesta          INT
+    IN     p_id                  INT,
+    IN     p_usuario_id          INT,
+    IN     p_nombre_usuario      BLOB,
+    IN     p_nombre_usuario_hmac CHAR(64),
+    IN     p_contrasena          VARCHAR(32),
+    IN     p_salt                VARCHAR(32),
+    INOUT  p_respuesta           INT
 )
 BEGIN
     IF EXISTS (
-        SELECT 1
-          FROM usuarios_sistema
-         WHERE id = p_id
+        SELECT 1 FROM usuarios_sistema WHERE id = p_id
     ) THEN
         UPDATE usuarios_sistema
-           SET usuario_id        = p_usuario_id,
-               username_payload  = p_username_payload,
-               username_hmac     = p_username_hmac,
-               contrasena        = p_contrasena,
-               salt              = p_salt
-         WHERE id = p_id;
-        SET p_respuesta = 1;    -- actualizado
+        SET usuario_id         = p_usuario_id,
+            nombre_usuario     = p_nombre_usuario,
+            nombre_usuario_hmac = p_nombre_usuario_hmac,
+            contrasena         = p_contrasena,
+            salt               = p_salt
+        WHERE id = p_id;
+        SET p_respuesta = 1; -- actualizado
     ELSE
-        SET p_respuesta = 2;    -- no existe el id
+        SET p_respuesta = 2; -- no existe
     END IF;
 END $$
 DELIMITER ;
@@ -547,19 +536,15 @@ CREATE PROCEDURE proc_delete_usuarios_sistema(
 )
 BEGIN
     IF EXISTS (
-        SELECT 1
-          FROM usuarios_sistema
-         WHERE id = p_id
+        SELECT 1 FROM usuarios_sistema WHERE id = p_id
     ) THEN
-        DELETE FROM usuarios_sistema
-         WHERE id = p_id;
-        SET p_respuesta = 1;    -- eliminado
+        DELETE FROM usuarios_sistema WHERE id = p_id;
+        SET p_respuesta = 1; -- eliminado
     ELSE
-        SET p_respuesta = 2;    -- no existe
+        SET p_respuesta = 2; -- no existe
     END IF;
 END $$
 DELIMITER ;
-
 
 
 

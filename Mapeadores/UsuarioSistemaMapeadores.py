@@ -4,7 +4,7 @@ from Dtos.UsuarioSistemaDTO import UsuarioSistemaDTO
 
 
 def dto_a_usuario_sistema(dto:UsuarioSistemaDTO) -> UsuarioSistema:
-    return UsuarioSistema(None, dto.get_usuario_id(), dto.get_nombre_usuario(), None, dto.get_contrasena(), None, None)
+    return UsuarioSistema(dto.get_id(), dto.get_usuario_id(), dto.get_nombre_usuario(), None, dto.get_contrasena(), None, None)
 
 
 def usuario_sistema_a_dto(usuario: UsuarioSistema) -> UsuarioSistemaDTO:

@@ -44,4 +44,12 @@ class UsuarioSistemaDTO:
             "usuarioID": self.get_usuario_id(),
             "nombreUsuario": self.get_nombre_usuario(),
             "usuarioDTO": self.get_usuarioDTO().to_dict()
-        }# "contrasena": self.get_contrasena(),
+        }
+    
+    def to_dict_simple(self):
+        return {
+            "id":  self.get_id(),
+            "usuarioID": self.get_usuario_id(),
+            "nombreUsuario": self.get_nombre_usuario(),
+            "contrasena": self.get_contrasena()
+        }

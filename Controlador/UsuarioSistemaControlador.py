@@ -10,32 +10,21 @@ class UsuarioSistemaControlador:
         dto = UsuarioSistemaDTO(None, None, nombre_usuario, contrasena, None)
         return usuarioSistemaServicio.obtenerPorUsernameYContrasena(dto)
 
-
-
-
-    #def insertar(usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
-    #    dto = UsuarioSistemaDTO(None,usuario_id,nombre_usuario,contrasena, None)
-    #    return usuarioSistemaServicio.insertar(dto)
+    def listarUsuariosSistema(self) -> Respuesta:
+        return usuarioSistemaServicio.listarUsuariosistema()
     
-
-
-
-###de aca hacia abajo por verificar
-    def listar(self) -> Respuesta:
-        return usuarioSistemaServicio.listar()
-
-    def obtenerPorId(self, id: int) -> Respuesta:
+    def obtenerUsuariosSistemaPorId(self, id: int) -> Respuesta:
         dto = UsuarioSistemaDTO(id, None, None, None, None)
-        return usuarioSistemaServicio.obtener_por_id(dto)
+        return usuarioSistemaServicio.obtenerUsuarioSistemaPorId(dto)
 
     def obtenerPorNombreUsuario(self, nombre_usuario: str) -> Respuesta:
         dto = UsuarioSistemaDTO(None, None, nombre_usuario, None, None)
-        return usuarioSistemaServicio.obtenerPorUsername(dto)
-
-    def actualizar(self, id: int, usuario_id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
-        dto = UsuarioSistemaDTO(id,usuario_id,nombre_usuario,contrasena, None)
-        return usuarioSistemaServicio.actualizar(dto)
-
-    def eliminar(self, id: int) -> Respuesta:
+        return usuarioSistemaServicio.obtenerPorUsernameConRespuesta(dto)
+    
+    def eliminarNombreUsuario(self, id: int) -> Respuesta:
         dto = UsuarioSistemaDTO(id, None, None, None, None)
-        return usuarioSistemaServicio.eliminar(dto)
+        return usuarioSistemaServicio.eliminarNombreUsuario(dto)
+
+    def actualizarUsuarioSistemaPorId(self, id: int, nombre_usuario: str, contrasena: str) -> Respuesta:
+        dto = UsuarioSistemaDTO(id,None,nombre_usuario,contrasena, None)
+        return usuarioSistemaServicio.actualizarUsuarioSistemaPorId(dto)
