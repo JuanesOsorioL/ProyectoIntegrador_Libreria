@@ -3,17 +3,17 @@ from Entidades.Rol import Rol
 from Utilidades.Configuracion import Configuracion
 
 class RolRepositorio:
-        
+
     def insertarRol(self, rol: Rol) -> tuple:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_insert_rol(?, @p_NuevoId, @p_Respuesta);}"
-            cursor.execute(consulta, (rol.GetNombre()))
+            consulta = "{CALL proc_insert_rol(?, ?, @p_NuevoId, @p_Respuesta)}"
+            cursor.execute(consulta, (rol.GetNombre(), rol.GetNombreHmac()))
             cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
-            codigo = cursor.fetchone()
+            resultado = cursor.fetchone()
             conexion.commit()
-            return codigo
+            return resultado
         finally:
             cursor.close()
             conexion.close()
@@ -30,14 +30,13 @@ class RolRepositorio:
             cursor.close()
             conexion.close()
 
-    def MostrarRolPorId(self,rol: Rol) -> Rol:
+    def MostrarRolPorId(self, rol: Rol) -> tuple:
         try:
-            conexion = pyodbc.connect(Configuracion.strConnection);
-            cursor = conexion.cursor();
-
-            consulta = "{CALL proc_select_rol_por_id(?);}"
+            conexion = pyodbc.connect(Configuracion.strConnection)
+            cursor = conexion.cursor()
+            consulta = "{CALL proc_select_rol_por_id(?)}"
             cursor.execute(consulta, rol.GetId())
-            resultado = cursor.fetchone();
+            resultado = cursor.fetchone()
             return resultado
         finally:
             cursor.close()
@@ -47,8 +46,8 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_update_rol(?, ?, @Respuesta);}"
-            cursor.execute(consulta, (rol.GetId(), rol.GetNombre()))
+            consulta = "{CALL proc_update_rol(?, ?, ?, @Respuesta)}"
+            cursor.execute(consulta, (rol.GetId(), rol.GetNombre(), rol.GetNombreHmac()))
             cursor.execute("SELECT @Respuesta;")
             respuesta = cursor.fetchone()[0]
             conexion.commit()
@@ -57,13 +56,12 @@ class RolRepositorio:
             cursor.close()
             conexion.close()
 
-
     def borrarRol(self, rol: Rol) -> int:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_delete_rol(?, @Respuesta);}"
-            cursor.execute(consulta, (rol.GetId()))
+            consulta = "{CALL proc_delete_rol(?, @Respuesta)}"
+            cursor.execute(consulta, rol.GetId())
             cursor.execute("SELECT @Respuesta;")
             codigo = cursor.fetchone()[0]
             conexion.commit()

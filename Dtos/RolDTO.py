@@ -1,22 +1,22 @@
 class RolDTO:
-    id: int = None
-    nombre: str = None
-
-    def __init__(self, id: int = None, nombre: str = ""):
+    def __init__(self, id=None, nombre=None):
         self.id = id
         self.nombre = nombre
 
-    def GetId(self) -> int:
-        return self.id;
+    def GetId(self):
+        return self.id
 
-    def SetId(self, value: int) -> None:
-        self.id = value;
+    def GetNombre(self):
+        return self.nombre
 
-    def GetNombre(self) -> str:
-        return self.nombre;
+    def SetId(self, value):
+        self.id = value
 
-    def SetNombre(self, value: str) -> None:
-        self.nombre = value;
+    def SetNombre(self, value):
+        self.nombre = value
 
-    def __str__(self) -> str:
-        return f"Id='{self.id}', Nombre={self.nombre}"
+    def to_dict(self):
+        return {
+            "id": self.GetId(),
+            "nombre": self.GetNombre()
+        }

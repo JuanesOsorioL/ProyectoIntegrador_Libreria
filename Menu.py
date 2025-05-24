@@ -4,10 +4,12 @@ import os
 from Utilidades.Configuracion import Configuracion
 from Controlador.DevolucionControlador import DevolucionControlador
 from Controlador.EditorialControlador import EditorialControlador
+from Controlador.LibroControlador import LibroControlador
 
 editorialControlador = EditorialControlador();
 rolControlador = RolControlador();
-devolucionControlador = DevolucionControlador()
+devolucionControlador = DevolucionControlador();
+libroControlador = LibroControlador();
 
 
 class Menu:
@@ -30,6 +32,11 @@ class Menu:
         print("17. Mostrar Editorial por ID")
         print("18. Actualizar Editorial por ID")
         print("19. Borrar Editorial por ID")
+        print("20. Ingresar Libro")
+        print("21. Mostrar todos los Libros")
+        print("22. Mostrar Libro por ID")
+        print("23. Actualizar Libro por ID")
+        print("24. Borrar Libro por ID")
         print("6. Salir")
         opcion = input("Seleccione una opción: ")
         return opcion
@@ -50,7 +57,7 @@ class Menu:
             elif opcion == "1":
                 os.system('cls')
                 nombre = str(input("Ingrese el nombre del nuevo Rol: "))
-                resultado=rolControlador.insertarRol(nombre)
+                resultado=rolControlador.InsertarNuevoRol(nombre)
                 print(resultado)
 
             elif opcion == "2":
@@ -159,7 +166,61 @@ class Menu:
                     print(resultado)
                 except ValueError:
                     print("ID inválido.")
+            
+            elif opcion == "20":
+                try:
+                    titulo = input("Título del libro: ")
+                    isbn = input("ISBN: ")
+                    descripcion = input("Descripción: ")
+                    anio = int(input("Año de publicación (YYYY): "))
+                    formato = input("Formato (Físico / Digital): ")
+                    editorial_id = int(input("ID de la editorial: "))
+                    precio = float(input("Precio: "))
+                    stock = int(input("Stock: "))
+                    resultado = libroControlador.insertarLibro(
+                        titulo, isbn, descripcion, anio, formato, editorial_id, precio, stock
+                    )
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos. Asegúrese de ingresar los tipos correctos.")
+            
+            elif opcion == "21":
+                resultado = libroControlador.mostrarTodos()
+                print(resultado)
 
+            elif opcion == "22":
+                try:
+                    id = int(input("Ingrese el ID del libro: "))
+                    resultado = libroControlador.mostrarPorId(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
+
+            elif opcion == "23":
+                try:
+                    id = int(input("ID del libro a actualizar: "))
+                    titulo = input("Nuevo título: ")
+                    isbn = input("Nuevo ISBN: ")
+                    descripcion = input("Nueva descripción: ")
+                    anio = int(input("Nuevo año de publicación (YYYY): "))
+                    formato = input("Nuevo formato (Físico / Digital): ")
+                    editorial_id = int(input("Nuevo ID de editorial: "))
+                    precio = float(input("Nuevo precio: "))
+                    stock = int(input("Nuevo stock: "))
+                    resultado = libroControlador.actualizarLibro(
+                        id, titulo, isbn, descripcion, anio, formato, editorial_id, precio, stock
+                    )
+                    print(resultado)
+                except ValueError:
+                    print("Datos inválidos. Verifique que los campos numéricos sean correctos.")
+
+            elif opcion == "24":
+                try:
+                    id = int(input("ID del libro a borrar: "))
+                    resultado = libroControlador.borrarLibro(id)
+                    print(resultado)
+                except ValueError:
+                    print("ID inválido.")
             
             elif opcion == "6":
                 print("Saliendo del programa...")
@@ -554,6 +615,7 @@ def crear_tablas_y_procedimientos():
             """,
             #devoluciones
             
+            "DROP PROCEDURE IF EXISTS proc_insert_devolucion",
             """
             CREATE PROCEDURE proc_insert_devolucion (
                 IN p_fecha DATE,
@@ -575,12 +637,14 @@ def crear_tablas_y_procedimientos():
                 SET p_Respuesta = 1;
             END
             """,
+            "DROP PROCEDURE IF EXISTS proc_select_devolucion",
             """
             CREATE PROCEDURE proc_select_devolucion()
             BEGIN
                 SELECT * FROM devoluciones;
             END
             """,
+            "DROP PROCEDURE IF EXISTS proc_select_devolucion_por_id",
             """
             CREATE PROCEDURE proc_select_devolucion_por_id (
                 IN p_id INT
@@ -589,6 +653,7 @@ def crear_tablas_y_procedimientos():
                 SELECT * FROM devoluciones WHERE id = p_id;
             END
             """,
+            "DROP PROCEDURE IF EXISTS proc_update_devolucion",
             """
             CREATE PROCEDURE proc_update_devolucion (
                 IN p_id INT,
@@ -616,6 +681,7 @@ def crear_tablas_y_procedimientos():
                 END IF;
             END
             """,
+            "DROP PROCEDURE IF EXISTS proc_delete_devolucion",
             """
             CREATE PROCEDURE proc_delete_devolucion (
                 IN p_id INT,
@@ -629,7 +695,162 @@ def crear_tablas_y_procedimientos():
                 ELSE
                     SET Respuesta = 2;
                 END IF;
+            END
+            """,
+            #Libros
+
+            "DROP PROCEDURE IF EXISTS proc_insert_libro",
+            """
+            CREATE PROCEDURE proc_insert_libro(
+                IN p_titulo VARCHAR(150),
+                IN p_isbn VARCHAR(20),
+                IN p_descripcion TEXT,
+                IN p_anio YEAR,
+                IN p_formato ENUM('Físico', 'Digital'),
+                IN p_editorial_id INT,
+                IN p_precio DECIMAL(10,2),
+                IN p_stock INT,
+                OUT p_NuevoId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM libros WHERE isbn = p_isbn) THEN
+                    SET p_Respuesta = 2;
+                    SET p_NuevoId = NULL;
+                ELSE
+                    INSERT INTO libros (titulo, isbn, descripcion, anio_publicacion, formato,
+                                        editorial_id, precio, stock)
+                    VALUES (p_titulo, p_isbn, p_descripcion, p_anio, p_formato,
+                            p_editorial_id, p_precio, p_stock);
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1;
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_libros",
+            """
+            CREATE PROCEDURE proc_select_libros()
+            BEGIN
+                SELECT * FROM libros;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_libro_por_id",
+            """
+            CREATE PROCEDURE proc_select_libro_por_id(IN p_id INT)
+            BEGIN
+                SELECT * FROM libros WHERE id = p_id;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_update_libro",
+            """
+            CREATE PROCEDURE proc_update_libro(
+                IN p_id INT,
+                IN p_titulo VARCHAR(150),
+                IN p_isbn VARCHAR(20),
+                IN p_descripcion TEXT,
+                IN p_anio YEAR,
+                IN p_formato ENUM('Físico', 'Digital'),
+                IN p_editorial_id INT,
+                IN p_precio DECIMAL(10,2),
+                IN p_stock INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                IF EXISTS (SELECT 1 FROM libros WHERE id = p_id) THEN
+                    UPDATE libros
+                    SET titulo = p_titulo,
+                        isbn = p_isbn,
+                        descripcion = p_descripcion,
+                        anio_publicacion = p_anio,
+                        formato = p_formato,
+                        editorial_id = p_editorial_id,
+                        precio = p_precio,
+                        stock = p_stock
+                    WHERE id = p_id;
+
+                    SET p_Respuesta = 1;
+                ELSE
+                    SET p_Respuesta = 2;
+                END IF;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_delete_libro",
+            """
+            CREATE PROCEDURE proc_delete_libro(IN p_id INT, OUT p_Respuesta INT)
+            BEGIN
+                IF EXISTS (SELECT 1 FROM libros WHERE id = p_id) THEN
+                    DELETE FROM libros WHERE id = p_id;
+                    SET p_Respuesta = 1;
+                ELSE
+                    SET p_Respuesta = 2;
+                END IF;
+            END
+            """,
+            
+            # Ventas
+
+            "DROP PROCEDURE IF EXISTS proc_insert_venta",
+            """
+            CREATE PROCEDURE proc_insert_venta(
+                IN p_usuario_id INT,
+                IN p_empleado_id INT,
+                IN p_total DECIMAL(10,2),
+                OUT p_NuevoId INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                INSERT INTO ventas (usuario_id, empleado_id, total)
+                VALUES (p_usuario_id, p_empleado_id, p_total);
+                SET p_NuevoId = LAST_INSERT_ID();
+                SET p_Respuesta = 1;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_ventas",
+            """
+            CREATE PROCEDURE proc_select_ventas()
+            BEGIN
+                SELECT * FROM ventas;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_select_venta_por_id",
+            """
+            CREATE PROCEDURE proc_select_venta_por_id(IN p_id INT)
+            BEGIN
+                SELECT * FROM ventas WHERE id = p_id;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_update_venta",
+            """
+            CREATE PROCEDURE proc_update_venta(
+                IN p_id INT,
+                IN p_usuario_id INT,
+                IN p_empleado_id INT,
+                IN p_fecha DATETIME,
+                IN p_total DECIMAL(10,2),
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                UPDATE ventas
+                SET usuario_id = p_usuario_id,
+                    empleado_id = p_empleado_id,
+                    fecha = p_fecha,
+                    total = p_total
+                WHERE id = p_id;
+
+                SET p_Respuesta = ROW_COUNT() > 0;
+            END
+            """,
+            "DROP PROCEDURE IF EXISTS proc_delete_venta",
+            """
+            CREATE PROCEDURE proc_delete_venta(
+                IN p_id INT,
+                OUT p_Respuesta INT
+            )
+            BEGIN
+                DELETE FROM ventas WHERE id = p_id;
+                SET p_Respuesta = ROW_COUNT() > 0;
             END;
+
 
             """
         ]

@@ -7,6 +7,12 @@ from Dtos.EditorialDTO import EditorialDTO
 from Entidades.Devolucion import Devolucion
 from Dtos.DevolucionDTO import DevolucionDTO
 
+from Entidades.Libro import Libro
+from Dtos.LibroDTO import LibroDTO
+
+from Entidades.Venta import Venta
+from Dtos.VentaDTO import VentaDTO
+
 
 """Mapeador Rol"""
 def rol_a_dto(rol: Rol) -> RolDTO:
@@ -56,4 +62,58 @@ def fila_a_devolucion(fila: tuple) -> Devolucion:
         estado_libro=fila[2],
         observaciones=fila[3]
     )
+
+"""Mapeador Libro"""
+
+def libro_a_dto(libro: Libro) -> LibroDTO:
+    return LibroDTO(
+        id=libro.id,
+        titulo=libro.titulo,
+        isbn=libro.isbn,
+        descripcion=libro.descripcion,
+        anio_publicacion=libro.anio_publicacion,
+        formato=libro.formato,
+        editorial_id=libro.editorial_id,
+        precio=libro.precio,
+        stock=libro.stock
+    )
+
+def dto_a_libro(dto: LibroDTO) -> Libro:
+    return Libro(
+        id=dto.id,
+        titulo=dto.titulo,
+        isbn=dto.isbn,
+        descripcion=dto.descripcion,
+        anio_publicacion=dto.anio_publicacion,
+        formato=dto.formato,
+        editorial_id=dto.editorial_id,
+        precio=dto.precio,
+        stock=dto.stock
+    )
+
+def fila_a_libro(fila: tuple) -> Libro:
+    return Libro(*fila)
+
+# Ventas
+
+def venta_a_dto(venta: Venta) -> VentaDTO:
+    return VentaDTO(
+        id=venta.id,
+        usuario_id=venta.usuario_id,
+        empleado_id=venta.empleado_id,
+        fecha=venta.fecha,
+        total=venta.total
+    )
+
+def dto_a_venta(dto: VentaDTO) -> Venta:
+    return Venta(
+        id=dto.id,
+        usuario_id=dto.usuario_id,
+        empleado_id=dto.empleado_id,
+        fecha=dto.fecha,
+        total=dto.total
+    )
+
+def fila_a_venta(fila: tuple) -> Venta:
+    return Venta(*fila)
 
