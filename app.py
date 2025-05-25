@@ -8,6 +8,8 @@ from Controlador.LibroControlador import LibroControlador
 from Dtos.Generico.Respuesta import Respuesta
 from Controlador.VentaControlador import VentaControlador
 from Controlador.DetalleVentaControlador import DetalleVentaControlador
+from Controlador.PrestamoControlador import PrestamoControlador
+from Controlador.DetallePrestamoControlador import DetallePrestamoControlador
 from datetime import datetime
 from Controlador.CrearBDControlador import CrearBDControlador
 from Cifrados.JWT import JWT
@@ -27,6 +29,8 @@ editorialControlador = EditorialControlador()
 libroControlador = LibroControlador()
 ventaControlador = VentaControlador()
 detalleVentaControlador = DetalleVentaControlador()
+prestamoControlador = PrestamoControlador()
+detallePrestamoControlador = DetallePrestamoControlador()
 
 # FUNCIONES DE UTILIDAD
 
@@ -470,6 +474,81 @@ def actualizar_detalle(venta_id, libro_id):
 def eliminar_detalle(venta_id, libro_id):
     respuesta = detalleVentaControlador.borrarDetalle(venta_id, libro_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+# Prestamo
+
+@app.route('/prestamos', methods=['GET'])
+def obtener_prestamos():
+    respuesta = prestamoControlador.mostrarTodosLosPrestamos()
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
+
+@app.route('/prestamos/<int:prestamo_id>', methods=['GET'])
+def obtener_prestamo_por_id(prestamo_id):
+    respuesta = prestamoControlador.mostrarPrestamoPorId(prestamo_id)
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
+
+@app.route('/prestamos', methods=['POST'])
+def crear_prestamo():
+    payload = request.get_json()
+    respuesta = prestamoControlador.insertarPrestamo(
+        payload.get('cliente_id'),
+        payload.get('empleado_id'),
+        payload.get('fecha_prestamo'),
+        payload.get('fecha_devolucion'),
+        payload.get('estado')
+    )
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+@app.route('/prestamos/<int:prestamo_id>', methods=['PUT'])
+def actualizar_prestamo(prestamo_id):
+    payload = request.get_json()
+    respuesta = prestamoControlador.actualizarPrestamo(
+        prestamo_id,
+        payload.get('cliente_id'),
+        payload.get('empleado_id'),
+        payload.get('fecha_prestamo'),
+        payload.get('fecha_devolucion'),
+        payload.get('estado')
+    )
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+@app.route('/prestamos/<int:prestamo_id>', methods=['DELETE'])
+def eliminar_prestamo(prestamo_id):
+    respuesta = prestamoControlador.borrarPrestamo(prestamo_id)
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+# Detalle Prestamo
+
+@app.route('/detallesPrestamos', methods=['GET'])
+def obtener_detalles_prestamo():
+    respuesta = detallePrestamoControlador.mostrarTodosLosDetalles()
+    return jsonify(respuesta.to_dict()), 200
+
+@app.route('/detallesPrestamos/<int:prestamo_id>/<int:libro_id>', methods=['GET'])
+def obtener_detalle_prestamo_id(prestamo_id, libro_id):
+    respuesta = detallePrestamoControlador.mostrarDetallePorId(prestamo_id, libro_id)
+    return jsonify(respuesta.to_dict()), 200
+
+@app.route('/detallesPrestamos', methods=['POST'])
+def crear_detalle_prestamo():
+    payload = request.get_json()
+    respuesta = detallePrestamoControlador.insertarDetalle(
+        payload.get('prestamo_id'),
+        payload.get('libro_id'),
+        payload.get('cantidad')
+    )
+    return jsonify(respuesta.to_dict()), 200
+
+@app.route('/detallesPrestamos/<int:prestamo_id>/<int:libro_id>', methods=['PUT'])
+def actualizar_detalle_prestamo(prestamo_id, libro_id):
+    payload = request.get_json()
+    respuesta = detallePrestamoControlador.actualizarDetalle(prestamo_id, libro_id, payload.get('cantidad'))
+    return jsonify(respuesta.to_dict()), 200
+
+@app.route('/detallesPrestamos/<int:prestamo_id>/<int:libro_id>', methods=['DELETE'])
+def eliminar_detalle_prestamo(prestamo_id, libro_id):
+    respuesta = detallePrestamoControlador.borrarDetalle(prestamo_id, libro_id)
+    return jsonify(respuesta.to_dict()), 200
 
 
 # APP MAIN

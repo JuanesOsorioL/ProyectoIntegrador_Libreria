@@ -912,6 +912,137 @@ class CrearBDRepositorio:
                     WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
                     SET p_Respuesta = ROW_COUNT() > 0;
                 END
+                """),
+                
+                #Prestamo
+                ("proc_insert_prestamo", """
+                CREATE PROCEDURE proc_insert_prestamo(
+                    IN p_usuario_id INT,
+                    IN p_empleado_id INT,
+                    IN p_fecha_prestamo DATE,
+                    IN p_fecha_devolucion DATE,
+                    IN p_estado VARCHAR(20),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO prestamos (usuario_id, empleado_id, fecha_prestamo, fecha_devolucion, estado)
+                    VALUES (p_usuario_id, p_empleado_id, p_fecha_prestamo, p_fecha_devolucion, p_estado);
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_prestamos", """
+                CREATE PROCEDURE proc_select_prestamos()
+                BEGIN
+                    SELECT * FROM prestamos;
+                END
+                 """),
+                ("proc_select_prestamo_por_id", """
+                CREATE PROCEDURE proc_select_prestamo_por_id(IN p_id INT)
+                BEGIN
+                    SELECT * FROM prestamos WHERE id = p_id;
+                END
+                 """),
+                ("proc_update_prestamo", """
+                CREATE PROCEDURE proc_update_prestamo(
+                    IN p_id INT,
+                    IN p_usuario_id INT,
+                    IN p_empleado_id INT,
+                    IN p_fecha_prestamo DATE,
+                    IN p_fecha_devolucion DATE,
+                    IN p_estado VARCHAR(20),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE prestamos
+                    SET usuario_id = p_usuario_id,
+                        empleado_id = p_empleado_id,
+                        fecha_prestamo = p_fecha_prestamo,
+                        fecha_devolucion = p_fecha_devolucion,
+                        estado = p_estado
+                    WHERE id = p_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                 """),
+                ("proc_delete_prestamo", """
+                CREATE PROCEDURE proc_delete_prestamo(
+                    IN p_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM prestamos WHERE id = p_id;
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                 """),
+
+                 # Detalle Prestamo
+                ("proc_insert_detalle_prestamo", """
+                CREATE PROCEDURE proc_insert_detalle_prestamo(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO detalle_prestamo (prestamo_id, libro_id, cantidad)
+                    VALUES (p_prestamo_id, p_libro_id, p_cantidad);
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_detalles_prestamo", """
+                CREATE PROCEDURE proc_select_detalles_prestamo()
+                BEGIN
+                    SELECT * FROM detalle_prestamo;
+                END
+                """),
+                ("proc_select_detalle_prestamo_por_id", """
+                CREATE PROCEDURE proc_select_detalle_prestamo_por_id(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_prestamo
+                    WHERE prestamo_id = p_prestamo_id AND libro_id = p_libro_id;
+                END
+                """),
+                ("proc_select_detalles_por_prestamo", """
+                CREATE PROCEDURE proc_select_detalles_por_prestamo(
+                    IN p_prestamo_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_prestamo
+                    WHERE prestamo_id = p_prestamo_id;
+                END
+                """),
+                ("proc_update_detalle_prestamo", """
+                CREATE PROCEDURE proc_update_detalle_prestamo(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE detalle_prestamo
+                    SET cantidad = p_cantidad
+                    WHERE prestamo_id = p_prestamo_id AND libro_id = p_libro_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                """),
+                ("proc_delete_detalle_prestamo", """
+                CREATE PROCEDURE proc_delete_detalle_prestamo(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM detalle_prestamo
+                    WHERE prestamo_id = p_prestamo_id AND libro_id = p_libro_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
                 """)
 
 

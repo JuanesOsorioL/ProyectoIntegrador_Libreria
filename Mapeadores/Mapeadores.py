@@ -16,6 +16,12 @@ from Dtos.VentaDTO import VentaDTO
 from Entidades.DetalleVenta import DetalleVenta
 from Dtos.DetalleVentaDTO import DetalleVentaDTO
 
+from Entidades.Prestamo import Prestamo
+from Dtos.PrestamoDTO import PrestamoDTO
+
+from Entidades.DetallePrestamo import DetallePrestamo
+from Dtos.DetallePrestamoDTO import DetallePrestamoDTO
+
 
 """Mapeador Rol"""
 def rol_a_dto(rol: Rol) -> RolDTO:
@@ -120,6 +126,7 @@ def dto_a_venta(dto: VentaDTO) -> Venta:
 def fila_a_venta(fila: tuple) -> Venta:
     return Venta(*fila)
 
+# Detalle Venta
 
 def detalle_venta_a_dto(entidad: DetalleVenta) -> DetalleVentaDTO:
     return DetalleVentaDTO(
@@ -144,5 +151,54 @@ def fila_a_detalle_venta(fila: tuple) -> DetalleVenta:
         cantidad=fila[2],
         precio_unitario=float(fila[3])  # subtotal se recalcula automáticamente
     )
+
+#Prestamo
+
+def prestamo_a_dto(entidad: Prestamo) -> PrestamoDTO:
+    return PrestamoDTO(
+        id=entidad.id,
+        usuario_id=entidad.usuario_id,
+        empleado_id=entidad.empleado_id,
+        fecha_prestamo=entidad.fecha_prestamo,
+        fecha_devolucion=entidad.fecha_devolucion,
+        estado=entidad.estado
+    )
+
+def dto_a_prestamo(dto: PrestamoDTO) -> Prestamo:
+    return Prestamo(
+        id=dto.id,
+        usuario_id=dto.usuario_id,
+        empleado_id=dto.empleado_id,
+        fecha_prestamo=dto.fecha_prestamo,
+        fecha_devolucion=dto.fecha_devolucion,
+        estado=dto.estado
+    )
+
+def fila_a_prestamo(fila: tuple) -> Prestamo:
+    return Prestamo(*fila)
+
+# Detalle Prestamo
+
+def detalle_prestamo_a_dto(entidad: DetallePrestamo) -> DetallePrestamoDTO:
+    return DetallePrestamoDTO(
+        prestamo_id=entidad.prestamo_id,
+        libro_id=entidad.libro_id,
+        cantidad=entidad.cantidad
+    )
+
+def dto_a_detalle_prestamo(dto: DetallePrestamoDTO) -> DetallePrestamo:
+    return DetallePrestamo(
+        prestamo_id=dto.prestamo_id,
+        libro_id=dto.libro_id,
+        cantidad=dto.cantidad
+    )
+
+def fila_a_detalle_prestamo(fila: tuple) -> DetallePrestamo:
+    return DetallePrestamo(
+        prestamo_id=fila[0],
+        libro_id=fila[1],
+        cantidad=fila[2]
+    )
+
 
 
