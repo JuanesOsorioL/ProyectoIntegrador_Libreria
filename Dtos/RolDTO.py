@@ -15,13 +15,10 @@ class RolDTO:
     def SetNombre(self, value):
         self.nombre = value
 
-<<<<<<< HEAD
+
     def to_dict(self):
         return {
             "id": self.GetId(),
             "nombre": self.GetNombre()
         }
-=======
-    def __str__(self) -> str:
-        return f"Id='{self.id}', Nombre={self.nombre}"
->>>>>>> Cristian
+

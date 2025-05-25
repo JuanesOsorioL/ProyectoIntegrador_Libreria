@@ -1,18 +1,31 @@
-from flask import Flask, request, jsonify
-from Controlador.RolControlador import RolControlador
-from Controlador.UsuarioControlador import UsuarioControlador
-from Dtos.Generico.Respuesta import Respuesta
-from Controlador.UsuarioSistemaControlador import UsuarioSistemaControlador
 from datetime import datetime
-from Controlador.CrearBDControlador import CrearBDControlador
+from flask import Flask, request, jsonify
+
+
+from Dtos.Generico.Respuesta import Respuesta
 from Cifrados.JWT import JWT
 from Utilidades.ValidarToken import ValidarToken
 
+from Controlador.CrearBDControlador import CrearBDControlador
+from Controlador.RolControlador import RolControlador
+from Controlador.AutorControlador import AutorControlador
+from Controlador.UsuarioControlador import UsuarioControlador
+from Controlador.UsuarioSistemaControlador import UsuarioSistemaControlador
+from Controlador.CategoriaControlador import CategoriaControlador
+from Controlador.EditorialControlador import EditorialControlador
+from Controlador.LibroAutorControlador import LibroAutorControlador
+from Controlador.LibroCategoriaControlador import LibroCategoriaControlador
 jwt=JWT()
 app = Flask(__name__)
+
 usuarioSistemaControlador = UsuarioSistemaControlador()
 rolControlador = RolControlador()
 usuarioControlador=UsuarioControlador()
+autorControlador=AutorControlador()
+categoriaControlador=CategoriaControlador()
+editorialControlador=EditorialControlador()
+libroAutorControlador=LibroAutorControlador()
+libroCategoriaControlador=LibroCategoriaControlador()
 
 def validar_fecha(fecha_str: str) -> bool:
     if not fecha_str:
@@ -220,6 +233,255 @@ def crear_rol():
         return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
     except Exception as e:
         return jsonify({f"error": "Error interno del servidor {e}"}), 500
+
+
+#Autor
+
+@app.route('/autores', methods=['POST'])
+@ValidarToken(1,2)
+def crear_autor():
+    payload = request.get_json()
+    nombre = payload.get('nombre')
+    nacionalidad = payload.get('nacionalidad')
+    respuesta: Respuesta = autorControlador.insertarAutor(nombre, nacionalidad)
+    body = respuesta.to_dict()
+    return jsonify(body), 201 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/autores', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_autores():
+    respuesta: Respuesta = autorControlador.mostrarTodosLosAutores()
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+@app.route('/autores/<int:autor_id>', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_autor_por_id(autor_id):
+    respuesta: Respuesta = autorControlador.mostrarAutorPorId(autor_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+@app.route('/autores/<int:autor_id>', methods=['PUT'])
+@ValidarToken(1,2)
+def actualizar_autor(autor_id):
+    payload = request.get_json()
+    nombre = payload.get('nombre')
+    nacionalidad = payload.get('nacionalidad')
+    respuesta: Respuesta = autorControlador.actualizarAutor(autor_id, nombre, nacionalidad)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/autores/<int:autor_id>', methods=['DELETE'])
+@ValidarToken(1,2)
+def eliminar_autor(autor_id):
+    respuesta: Respuesta = autorControlador.borrarAutor(autor_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+# Categoría
+
+@app.route('/categorias', methods=['POST'])
+@ValidarToken(1,2)
+def crear_categoria():
+    payload = request.get_json()
+    nombre = payload.get('nombre')
+    respuesta: Respuesta = categoriaControlador.insertarCategoria(nombre)
+    body = respuesta.to_dict()
+    return jsonify(body), 201 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/categorias', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_categorias():
+    respuesta: Respuesta = categoriaControlador.mostrarTodasLasCategorias()
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+@app.route('/categorias/<int:categoria_id>', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_categoria_por_id(categoria_id):
+    respuesta: Respuesta = categoriaControlador.mostrarCategoriaPorId(categoria_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+@app.route('/categorias/<int:categoria_id>', methods=['PUT'])
+@ValidarToken(1,2)
+def actualizar_categoria(categoria_id):
+    payload = request.get_json()
+    nombre = payload.get('nombre')
+    respuesta: Respuesta = categoriaControlador.actualizarCategoria(categoria_id, nombre)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/categorias/<int:categoria_id>', methods=['DELETE'])
+@ValidarToken(1,2)
+def eliminar_categoria(categoria_id):
+    respuesta: Respuesta = categoriaControlador.borrarCategoria(categoria_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+
+# Editorial
+
+@app.route('/editoriales', methods=['POST'])
+@ValidarToken(1,2)
+def crear_editorial():
+    payload = request.get_json()
+    nombre = payload.get('nombre')
+    pais = payload.get('pais')
+    respuesta: Respuesta = editorialControlador.insertarEditorial(nombre, pais)
+    body = respuesta.to_dict()
+    return jsonify(body), 201 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/editoriales', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_editoriales():
+    respuesta: Respuesta = editorialControlador.mostrarTodasLasEditoriales()
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+@app.route('/editoriales/<int:editorial_id>', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_editorial_por_id(editorial_id):
+    respuesta: Respuesta = editorialControlador.mostrarEditorialPorId(editorial_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+@app.route('/editoriales/<int:editorial_id>', methods=['PUT'])
+@ValidarToken(1,2)
+def actualizar_editorial(editorial_id):
+    payload = request.get_json()
+    nombre = payload.get('nombre')
+    pais = payload.get('pais')
+    respuesta: Respuesta = editorialControlador.actualizarEditorial(editorial_id, nombre, pais)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/editoriales/<int:editorial_id>', methods=['DELETE'])
+@ValidarToken(1,2)
+def eliminar_editorial(editorial_id):
+    respuesta: Respuesta = editorialControlador.borrarEditorial(editorial_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Libro-Autor (relación) no verificada
+
+@app.route('/libros-autores', methods=['POST'])
+@ValidarToken(1)
+def crear_libro_autor():
+    payload = request.get_json()
+    libro_id = payload.get('libro_id')
+    autor_id = payload.get('autor_id')
+    respuesta: Respuesta = libroAutorControlador.insertarLibroAutor(libro_id, autor_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 201 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/libros-autores', methods=['GET'])
+@ValidarToken(1)
+def obtener_libros_autores():
+    respuesta: Respuesta = libroAutorControlador.mostrarTodosLosLibroAutor()
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+
+@app.route('/libros-autores/<int:libro_id>/<int:autor_id>', methods=['GET'])
+@ValidarToken(1)
+def obtener_libro_autor_por_id(libro_id, autor_id):
+    respuesta: Respuesta = libroAutorControlador.mostrarLibroAutorPorId(libro_id, autor_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+
+@app.route('/libros-autores/<int:libro_id>/<int:autor_id>', methods=['DELETE'])
+@ValidarToken(1)
+def eliminar_libro_autor(libro_id, autor_id):
+    respuesta: Respuesta = libroAutorControlador.borrarLibroAutor(libro_id, autor_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+
+@app.route('/libros-autores/<int:id>', methods=['PUT'])
+@ValidarToken(1)
+def actualizar_libro_autor(id):
+    payload = request.get_json()
+    libro_id = payload.get('libro_id')
+    autor_id = payload.get('autor_id')
+    respuesta: Respuesta = libroAutorControlador.actualizarLibroAutor(id, libro_id, autor_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+# Libro-Categoría (relación)
+
+@app.route('/libros-categorias', methods=['GET'])
+@ValidarToken(1)
+def obtener_libros_categorias():
+    respuesta: Respuesta = libroCategoriaControlador.mostrarTodosLosLibroCategoria()
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+
+@app.route('/libros-categorias/<int:libro_id>/<int:categoria_id>', methods=['GET'])
+@ValidarToken(1)
+def obtener_libro_categoria_por_id(libro_id, categoria_id):
+    respuesta: Respuesta = libroCategoriaControlador.mostrarLibroCategoriaPorId(libro_id, categoria_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
+
+
+@app.route('/libros-categorias/<int:libro_id>/<int:categoria_id>', methods=['DELETE'])
+@ValidarToken(1)
+def eliminar_libro_categoria(libro_id, categoria_id):
+    respuesta: Respuesta = libroCategoriaControlador.borrarLibroCategoria(libro_id, categoria_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+
+@app.route('/libros-categorias', methods=['POST'])
+@ValidarToken(1)
+def crear_libro_categoria():
+    payload = request.get_json()
+    libro_id = payload.get('libro_id')
+    categoria_id = payload.get('categoria_id')
+    respuesta: Respuesta = libroCategoriaControlador.insertarLibroCategoria(libro_id, categoria_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 201 if respuesta.get_estado() == "Operación Exitosa" else 400
+
+@app.route('/libros-categorias/<int:id>', methods=['PUT'])
+@ValidarToken(1)
+def actualizar_libro_categoria(id):
+    payload = request.get_json()
+    libro_id = payload.get('libro_id')
+    categoria_id = payload.get('categoria_id')
+    respuesta: Respuesta = libroCategoriaControlador.actualizarLibroCategoria(id, libro_id, categoria_id)
+    body = respuesta.to_dict()
+    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 
 if __name__ == '__main__':

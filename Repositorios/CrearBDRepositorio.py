@@ -558,8 +558,369 @@ class CrearBDRepositorio:
                     INNER JOIN usuarios u ON us.usuario_id = u.id
                     WHERE nombre_usuario_hmac = p_hmac;
                 END
-                """)
+                """),
+
+
+
+                #Autores
+                ("proc_insert_autor", """
+                CREATE PROCEDURE proc_insert_autor(
+                IN p_Nombre VARCHAR(100),
+                IN p_Nacionalidad VARCHAR(50),
+                OUT p_NuevoId INT,
+                OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM autores WHERE nombre = p_Nombre) THEN
+                        SET p_Respuesta = 2;
+                        SET p_NuevoId = NULL;
+                    ELSE
+                        INSERT INTO autores (nombre, nacionalidad) VALUES (p_Nombre, p_Nacionalidad);
+                        SET p_NuevoId = LAST_INSERT_ID();
+                        SET p_Respuesta = 1;
+                    END IF;
+                END
+                """),
+                ("proc_select_autor", """
+                CREATE PROCEDURE proc_select_autor()
+                BEGIN
+                    SELECT id, nombre, nacionalidad FROM autores;
+                END
+                """),
+                ("proc_select_autor_por_id", """
+                CREATE PROCEDURE proc_select_autor_por_id(IN p_id INT)
+                BEGIN
+                    SELECT id, nombre, nacionalidad FROM autores WHERE id = p_id;
+                END
+                """),
+                ("proc_update_autor", """
+                CREATE PROCEDURE proc_update_autor(
+                IN p_Id INT,
+                IN p_Nombre VARCHAR(100),
+                IN p_Nacionalidad VARCHAR(50),
+                INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM autores WHERE id = p_Id) THEN
+                        UPDATE autores SET nombre = p_Nombre, nacionalidad = p_Nacionalidad WHERE id = p_Id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_delete_autor", """
+                CREATE PROCEDURE proc_delete_autor(IN p_id INT, INOUT p_Respuesta INT)
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM autores WHERE id = p_id) THEN
+                        DELETE FROM autores WHERE id = p_id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+                                # CATEGORIAS
+                ("proc_insert_categoria", """
+                    CREATE PROCEDURE `proc_insert_categoria`(
+                        IN p_Nombre VARCHAR(100),
+                        OUT p_NuevoId INT,
+                        OUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM Libreria.categorias WHERE nombre = p_Nombre) THEN
+                            SET p_Respuesta = 2;
+                            SET p_NuevoId = NULL;
+                        ELSE
+                            INSERT INTO Libreria.categorias (nombre) VALUES (p_Nombre);
+                            SET p_NuevoId = LAST_INSERT_ID();
+                            SET p_Respuesta = 1;
+                        END IF;
+                    END
+                """),
+                ("proc_select_categoria", """
+                    CREATE PROCEDURE `proc_select_categoria`()
+                    BEGIN
+                        SELECT id, nombre FROM Libreria.categorias;
+                    END
+                """),
+                ("proc_select_categoria_por_id", """
+                    CREATE PROCEDURE `proc_select_categoria_por_id`(
+                        IN p_id INT
+                    )
+                    BEGIN
+                        SELECT id, nombre FROM Libreria.categorias WHERE id = p_id;
+                    END
+                """),
+                ("proc_update_categoria", """
+                    CREATE PROCEDURE `proc_update_categoria`(
+                        IN p_Id INT,
+                        IN p_Nombre VARCHAR(100),
+                        INOUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM Libreria.categorias WHERE id = p_Id) THEN
+                            UPDATE Libreria.categorias SET nombre = p_Nombre WHERE id = p_Id;
+                            SET p_Respuesta = 1;
+                        ELSE
+                            SET p_Respuesta = 2;
+                        END IF;
+                    END
+                """),
+                ("proc_delete_categoria", """
+                    CREATE PROCEDURE `proc_delete_categoria`(
+                        IN p_Id INT,
+                        INOUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM Libreria.categorias WHERE id = p_Id) THEN
+                            DELETE FROM Libreria.categorias WHERE id = p_Id;
+                            SET p_Respuesta = 1;
+                        ELSE
+                            SET p_Respuesta = 2;
+                        END IF;
+                    END
+                """),
+                                # LIBRO-CATEGORIAS
+                ("proc_insert_libro_categoria", """
+                    CREATE PROCEDURE `proc_insert_libro_categoria`(
+                        IN p_LibroId INT,
+                        IN p_CategoriaId INT,
+                        OUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM Libreria.libros_categorias 
+                            WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId
+                        ) THEN
+                            SET p_Respuesta = 3; -- Ya existe la relación
+                        ELSE
+                            INSERT INTO Libreria.libros_categorias (libro_id, categoria_id) 
+                            VALUES (p_LibroId, p_CategoriaId);
+                            SET p_Respuesta = 1; -- Éxito
+                        END IF;
+                    END
+                """),
+                ("proc_select_libro_categoria", """
+                    CREATE PROCEDURE `proc_select_libro_categoria`()
+                    BEGIN
+                        SELECT libro_id, categoria_id FROM Libreria.libros_categorias;
+                    END
+                """),
+                ("proc_select_libro_categoria_por_id", """
+                    CREATE PROCEDURE `proc_select_libro_categoria_por_id`(
+                        IN p_LibroId INT,
+                        IN p_CategoriaId INT
+                    )
+                    BEGIN
+                        SELECT libro_id, categoria_id 
+                        FROM Libreria.libros_categorias 
+                        WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId;
+                    END
+                """),
+                ("proc_update_libro_categoria", """
+                    CREATE PROCEDURE `proc_update_libro_categoria`(
+                        IN p_LibroId INT,
+                        IN p_CategoriaId INT,
+                        IN p_NuevoLibroId INT,
+                        IN p_NuevaCategoriaId INT,
+                        OUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM Libreria.libros_categorias 
+                            WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId
+                        ) THEN
+                            UPDATE Libreria.libros_categorias 
+                            SET libro_id = p_NuevoLibroId, categoria_id = p_NuevaCategoriaId
+                            WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId;
+                            SET p_Respuesta = 1;
+                        ELSE
+                            SET p_Respuesta = 2; -- No existe la relación original
+                        END IF;
+                    END
+                """),
+                ("proc_delete_libro_categoria", """
+                    CREATE PROCEDURE `proc_delete_libro_categoria`(
+                        IN p_LibroId INT,
+                        IN p_CategoriaId INT,
+                        OUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM Libreria.libros_categorias 
+                            WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId
+                        ) THEN
+                            DELETE FROM Libreria.libros_categorias 
+                            WHERE libro_id = p_LibroId AND categoria_id = p_CategoriaId;
+                            SET p_Respuesta = 1;
+                        ELSE
+                            SET p_Respuesta = 2; -- No existe la relación
+                        END IF;
+                    END
+                """),
+                # LIBRO AUTORES
+                ("proc_insert_libro_autor", """
+                    CREATE PROCEDURE `proc_insert_libro_autor`(
+                        IN p_IdLibro INT,
+                        IN p_IdAutor INT,
+                        OUT p_NuevoId INT,
+                        OUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM Libreria.libro_autor 
+                            WHERE id_libro = p_IdLibro AND id_autor = p_IdAutor
+                        ) THEN
+                            SET p_Respuesta = 2; -- Relación ya existe
+                            SET p_NuevoId = NULL;
+                        ELSE
+                            INSERT INTO Libreria.libro_autor (id_libro, id_autor) 
+                            VALUES (p_IdLibro, p_IdAutor);
+                            SET p_NuevoId = LAST_INSERT_ID();
+                            SET p_Respuesta = 1; -- Inserción exitosa
+                        END IF;
+                    END
+                """),
+                ("proc_select_libro_autor", """
+                    CREATE PROCEDURE `proc_select_libro_autor`()
+                    BEGIN
+                        SELECT id, id_libro, id_autor FROM Libreria.libro_autor;
+                    END
+                """),
+                ("proc_select_libro_autor_por_id", """
+                    CREATE PROCEDURE `proc_select_libro_autor_por_id`(
+                        IN p_Id INT
+                    )
+                    BEGIN
+                        SELECT id, id_libro, id_autor 
+                        FROM Libreria.libro_autor 
+                        WHERE id = p_Id;
+                    END
+                """),
+                ("proc_update_libro_autor", """
+                    CREATE PROCEDURE `proc_update_libro_autor`(
+                        IN p_Id INT,
+                        IN p_IdLibro INT,
+                        IN p_IdAutor INT,
+                        INOUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM Libreria.libro_autor 
+                            WHERE id = p_Id
+                        ) THEN
+                            UPDATE Libreria.libro_autor 
+                            SET id_libro = p_IdLibro, id_autor = p_IdAutor 
+                            WHERE id = p_Id;
+                            SET p_Respuesta = 1; -- Actualización exitosa
+                        ELSE
+                            SET p_Respuesta = 2; -- Relación no encontrada
+                        END IF;
+                    END
+                """),
+                ("proc_delete_libro_autor", """
+                    CREATE PROCEDURE `proc_delete_libro_autor`(
+                        IN p_Id INT,
+                        INOUT p_Respuesta INT
+                    )
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM Libreria.libro_autor 
+                            WHERE id = p_Id
+                        ) THEN
+                            DELETE FROM Libreria.libro_autor 
+                            WHERE id = p_Id;
+                            SET p_Respuesta = 1; -- Eliminación exitosa
+                        ELSE
+                            SET p_Respuesta = 2; -- Relación no encontrada
+                        END IF;
+                    END
+                """),
+                                    # EDITORIALES
+                    ("proc_insert_editorial", """
+                        CREATE PROCEDURE `proc_insert_editorial`(
+                            IN p_Nombre VARCHAR(100),
+                            IN p_Pais VARCHAR(50),
+                            OUT p_NuevoId INT,
+                            OUT p_Respuesta INT
+                        )
+                        BEGIN
+                            IF EXISTS (
+                                SELECT 1 FROM Libreria.editoriales 
+                                WHERE nombre = p_Nombre
+                            ) THEN
+                                SET p_Respuesta = 2;
+                                SET p_NuevoId = NULL;
+                            ELSE
+                                INSERT INTO Libreria.editoriales (nombre, pais) 
+                                VALUES (p_Nombre, p_Pais);
+                                SET p_NuevoId = LAST_INSERT_ID();
+                                SET p_Respuesta = 1;
+                            END IF;
+                        END
+                    """),
+                    ("proc_select_editorial", """
+                        CREATE PROCEDURE `proc_select_editorial`()
+                        BEGIN
+                            SELECT id, nombre, pais FROM Libreria.editoriales;
+                        END
+                    """),
+                    ("proc_select_editorial_por_id", """
+                        CREATE PROCEDURE `proc_select_editorial_por_id`(
+                            IN p_id INT
+                        )
+                        BEGIN
+                            SELECT id, nombre, pais 
+                            FROM Libreria.editoriales 
+                            WHERE id = p_id;
+                        END
+                    """),
+                    ("proc_update_editorial", """
+                        CREATE PROCEDURE `proc_update_editorial`(
+                            IN p_Id INT,
+                            IN p_Nombre VARCHAR(100),
+                            IN p_Pais VARCHAR(50),
+                            INOUT p_Respuesta INT
+                        )
+                        BEGIN
+                            IF EXISTS (
+                                SELECT 1 FROM Libreria.editoriales 
+                                WHERE id = p_Id
+                            ) THEN
+                                UPDATE Libreria.editoriales 
+                                SET nombre = p_Nombre, pais = p_Pais 
+                                WHERE id = p_Id;
+                                SET p_Respuesta = 1;
+                            ELSE
+                                SET p_Respuesta = 2;
+                            END IF;
+                        END
+                    """),
+                    ("proc_delete_editorial", """
+                        CREATE PROCEDURE `proc_delete_editorial`(
+                            IN p_id INT,
+                            INOUT p_Respuesta INT
+                        )
+                        BEGIN
+                            IF EXISTS (
+                                SELECT 1 FROM Libreria.editoriales 
+                                WHERE id = p_id
+                            ) THEN
+                                DELETE FROM Libreria.editoriales 
+                                WHERE id = p_id;
+                                SET p_Respuesta = 1;
+                            ELSE
+                                SET p_Respuesta = 2;
+                            END IF;
+                        END
+                    """)
+
+
             ]
+
+
+
 
 
             for name, ddl in procedimientos:

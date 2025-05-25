@@ -1,6 +1,6 @@
 from Dtos.LibroAutorDTO import LibroAutorDTO
 from Entidades.LibroAutor import LibroAutor
-from Mapeadores.Mapeadores import dto_a_libro_autor, libro_autor_a_dto, fila_a_libro_autor
+from Mapeadores.LibroAutorMapeadores import dto_a_libro_autor, libro_autor_a_dto, fila_a_libro_autor
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.LibroAutorRepositorio import LibroAutorRepositorio
 

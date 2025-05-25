@@ -1,6 +1,6 @@
 from Dtos.DevolucionDTO import DevolucionDTO
 from Entidades.Devolucion import Devolucion
-from Mapeadores.Mapeadores import dto_a_devolucion, devolucion_a_dto, fila_a_devolucion
+from Mapeadores.DevolucionesMapeadores import dto_a_devolucion, devolucion_a_dto, fila_a_devolucion
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.DevolucionRepositorio import DevolucionRepositorio
 

@@ -1,6 +1,6 @@
 from Dtos.CategoriaDTO import CategoriaDTO
 from Entidades.Categoria import Categoria
-from Mapeadores.Mapeadores import dto_a_categoria, categoria_a_dto, fila_a_categoria
+from Mapeadores.CategoriaMapeadores import dto_a_categoria, categoria_a_dto, fila_a_categoria
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.CategoriaRepositorio import CategoriaRepositorio
 

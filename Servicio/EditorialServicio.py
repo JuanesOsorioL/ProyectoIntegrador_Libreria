@@ -1,6 +1,6 @@
 from Dtos.EditorialDTO import EditorialDTO
 from Entidades.Editorial import Editorial
-from Mapeadores.Mapeadores import dto_a_editorial, editorial_a_dto, fila_a_editorial
+from Mapeadores.EditorialMapeadores import dto_a_editorial, editorial_a_dto, fila_a_editorial
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.EditorialRepositorio import EditorialRepositorio
 
