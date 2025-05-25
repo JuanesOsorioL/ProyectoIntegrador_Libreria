@@ -370,11 +370,13 @@ def eliminar_libro(libro_id):
 
 # VENTAS
 @app.route('/ventas', methods=['GET'])
+@ValidarToken(1,2)
 def obtener_ventas():
     respuesta = ventaControlador.mostrarTodasLasVentas()
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
 
 @app.route('/ventas/<int:venta_id>', methods=['GET'])
+@ValidarToken(1,2)
 def obtener_venta_por_id(venta_id):
     respuesta = ventaControlador.mostrarVentaPorId(venta_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
@@ -391,6 +393,7 @@ def crear_venta():
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
 
 @app.route('/ventas/<int:venta_id>', methods=['PUT'])
+@ValidarToken(1,2)
 def actualizar_venta(venta_id):
     payload = request.get_json()
     respuesta = ventaControlador.actualizarVenta(
@@ -403,6 +406,7 @@ def actualizar_venta(venta_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
 
 @app.route('/ventas/<int:venta_id>', methods=['DELETE'])
+@ValidarToken(1)
 def eliminar_venta(venta_id):
     respuesta = ventaControlador.borrarVenta(venta_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
