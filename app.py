@@ -7,6 +7,7 @@ from Controlador.EditorialControlador import EditorialControlador
 from Controlador.LibroControlador import LibroControlador
 from Dtos.Generico.Respuesta import Respuesta
 from Controlador.VentaControlador import VentaControlador
+from Controlador.DetalleVentaControlador import DetalleVentaControlador
 from datetime import datetime
 from Controlador.CrearBDControlador import CrearBDControlador
 from Cifrados.JWT import JWT
@@ -25,6 +26,7 @@ devolucionControlador = DevolucionControlador()
 editorialControlador = EditorialControlador()
 libroControlador = LibroControlador()
 ventaControlador = VentaControlador()
+detalleVentaControlador = DetalleVentaControlador()
 
 # FUNCIONES DE UTILIDAD
 
@@ -161,7 +163,7 @@ def usuarios_Sistema_por_Id(usuario_sistema_id):
     body = respuesta.to_dict()
     return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
 
-@app.route('/usuarios_sistema/por_username', methods=['POST'])
+@app.route('/usuarios_sistema/por_username', methods=['GET'])
 @ValidarToken(1)
 def obtener_usuario_por_username():
     try:
@@ -250,6 +252,7 @@ def obtener_editorial_por_id(editorial_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
 
 @app.route('/editoriales', methods=['POST'])
+@ValidarToken(1,2)
 def crear_editorial():
     payload = request.get_json()
     respuesta = editorialControlador.insertarEditorial(
@@ -259,6 +262,7 @@ def crear_editorial():
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 @app.route('/editoriales/<int:editorial_id>', methods=['PUT'])
+@ValidarToken(1,2)
 def actualizar_editorial(editorial_id):
     payload = request.get_json()
     respuesta = editorialControlador.actualizarEditorial(
@@ -269,6 +273,7 @@ def actualizar_editorial(editorial_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 @app.route('/editoriales/<int:editorial_id>', methods=['DELETE'])
+@ValidarToken(1)
 def eliminar_editorial(editorial_id):
     respuesta = editorialControlador.borrarEditorial(editorial_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
@@ -286,6 +291,7 @@ def obtener_devolucion_por_id(devolucion_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
 
 @app.route('/devoluciones', methods=['POST'])
+@ValidarToken(1,2)
 def crear_devolucion():
     payload = request.get_json()
     fecha = payload.get('fecha_real_devolucion')
@@ -300,6 +306,7 @@ def crear_devolucion():
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 @app.route('/devoluciones/<int:devolucion_id>', methods=['PUT'])
+@ValidarToken(1,2)
 def actualizar_devolucion(devolucion_id):
     payload = request.get_json()
     fecha = payload.get('fecha_real_devolucion')
@@ -315,6 +322,7 @@ def actualizar_devolucion(devolucion_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 @app.route('/devoluciones/<int:devolucion_id>', methods=['DELETE'])
+@ValidarToken(1,2)
 def eliminar_devolucion(devolucion_id):
     respuesta = devolucionControlador.borrarDevolucion(devolucion_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
@@ -332,6 +340,7 @@ def obtener_libro_por_id(libro_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
 
 @app.route('/libros', methods=['POST'])
+@ValidarToken(1,2)
 def crear_libro():
     payload = request.get_json()
     respuesta = libroControlador.insertarLibro(
@@ -347,6 +356,7 @@ def crear_libro():
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 @app.route('/libros/<int:libro_id>', methods=['PUT'])
+@ValidarToken(1,2)
 def actualizar_libro(libro_id):
     payload = request.get_json()
     respuesta = libroControlador.actualizarLibro(
@@ -363,6 +373,7 @@ def actualizar_libro(libro_id):
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
 
 @app.route('/libros/<int:libro_id>', methods=['DELETE'])
+@ValidarToken(1)
 def eliminar_libro(libro_id):
     respuesta = libroControlador.borrarLibro(libro_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
@@ -409,6 +420,55 @@ def actualizar_venta(venta_id):
 @ValidarToken(1)
 def eliminar_venta(venta_id):
     respuesta = ventaControlador.borrarVenta(venta_id)
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+# Detalle Ventas
+@app.route('/detallesVentas', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_detalles():
+    respuesta = detalleVentaControlador.mostrarTodosLosDetalles()
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
+
+@app.route('/detallesVentas/<int:venta_id>/<int:libro_id>', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_detalle_por_id(venta_id, libro_id):
+    respuesta = detalleVentaControlador.mostrarDetallePorId(venta_id, libro_id)
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
+
+@app.route('/detallesVentas/venta/<int:venta_id>', methods=['GET'])
+@ValidarToken(1,2)
+def obtener_detalles_por_venta(venta_id):
+    respuesta = detalleVentaControlador.mostrarDetallesDeUnaVenta(venta_id)
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 404
+
+@app.route('/detallesVentas', methods=['POST'])
+@ValidarToken(1,2)
+def crear_detalle():
+    payload = request.get_json()
+    respuesta = detalleVentaControlador.insertarDetalle(
+        payload.get('venta_id'),
+        payload.get('libro_id'),
+        payload.get('cantidad'),
+        payload.get('precio_unitario')
+    )
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+@app.route('/detallesVentas/<int:venta_id>/<int:libro_id>', methods=['PUT'])
+@ValidarToken(1,2)
+def actualizar_detalle(venta_id, libro_id):
+    payload = request.get_json()
+    respuesta = detalleVentaControlador.actualizarDetalle(
+        venta_id,
+        libro_id,
+        payload.get('cantidad'),
+        payload.get('precio_unitario')
+    )
+    return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
+
+@app.route('/detallesVentas/<int:venta_id>/<int:libro_id>', methods=['DELETE'])
+@ValidarToken(1)
+def eliminar_detalle(venta_id, libro_id):
+    respuesta = detalleVentaControlador.borrarDetalle(venta_id, libro_id)
     return jsonify(respuesta.to_dict()), 200 if respuesta.estado == "Operación Exitosa" else 400
 
 

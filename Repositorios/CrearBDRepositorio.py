@@ -839,7 +839,81 @@ class CrearBDRepositorio:
                     DELETE FROM ventas WHERE id = p_id;
                     SET p_Respuesta = ROW_COUNT() > 0;
                 END
+                """),
+                
+                #Detalle Venta
+
+                ("proc_insert_detalle_venta", """
+                CREATE PROCEDURE proc_insert_detalle_venta(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    IN p_precio_unitario DECIMAL(10,2),
+                    IN p_subtotal DECIMAL(10,2),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO detalle_venta (venta_id, libro_id, cantidad, precio_unitario, subtotal)
+                    VALUES (p_venta_id, p_libro_id, p_cantidad, p_precio_unitario, p_subtotal);
+                    SET p_Respuesta = 1;
+                END
+                  """),
+                ("proc_select_detalles_venta", """
+                CREATE PROCEDURE proc_select_detalles_venta()
+                BEGIN
+                    SELECT * FROM detalle_venta;
+                END
+                """),
+                ("proc_select_detalle_por_id", """
+                CREATE PROCEDURE proc_select_detalle_por_id(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_venta
+                    WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
+                END
+                 """),
+                ("proc_select_detalles_por_venta", """
+                CREATE PROCEDURE proc_select_detalles_por_venta(
+                    IN p_venta_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_venta WHERE venta_id = p_venta_id;
+                END
+                 """),
+                ("proc_update_detalle_venta", """
+                CREATE PROCEDURE proc_update_detalle_venta(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    IN p_precio_unitario DECIMAL(10,2),
+                    IN p_subtotal DECIMAL(10,2),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE detalle_venta
+                    SET cantidad = p_cantidad,
+                        precio_unitario = p_precio_unitario,
+                        subtotal = p_subtotal
+                    WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                 """),
+                ("proc_delete_detalle_venta", """
+                CREATE PROCEDURE proc_delete_detalle_venta(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM detalle_venta
+                    WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
                 """)
+
 
             ]
 
