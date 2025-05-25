@@ -8,8 +8,13 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
+<<<<<<< HEAD
             consulta = "{CALL proc_insert_rol(?, ?, @p_NuevoId, @p_Respuesta)}"
             cursor.execute(consulta, (rol.GetNombre(), rol.GetNombreHmac()))
+=======
+            consulta = "{CALL proc_insert_rol(?, @p_NuevoId, @p_Respuesta);}"
+            cursor.execute(consulta, (rol.GetNombre()))
+>>>>>>> Cristian
             cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
             resultado = cursor.fetchone()
             conexion.commit()
@@ -32,9 +37,16 @@ class RolRepositorio:
 
     def MostrarRolPorId(self, rol: Rol) -> tuple:
         try:
+<<<<<<< HEAD
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
             consulta = "{CALL proc_select_rol_por_id(?)}"
+=======
+            conexion = pyodbc.connect(Configuracion.strConnection);
+            cursor = conexion.cursor();
+
+            consulta = "{CALL proc_select_rol_por_id(?);}"
+>>>>>>> Cristian
             cursor.execute(consulta, rol.GetId())
             resultado = cursor.fetchone()
             return resultado
@@ -46,8 +58,13 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
+<<<<<<< HEAD
             consulta = "{CALL proc_update_rol(?, ?, ?, @Respuesta)}"
             cursor.execute(consulta, (rol.GetId(), rol.GetNombre(), rol.GetNombreHmac()))
+=======
+            consulta = "{CALL proc_update_rol(?, ?, @Respuesta);}"
+            cursor.execute(consulta, (rol.GetId(), rol.GetNombre()))
+>>>>>>> Cristian
             cursor.execute("SELECT @Respuesta;")
             respuesta = cursor.fetchone()[0]
             conexion.commit()
@@ -60,8 +77,13 @@ class RolRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
+<<<<<<< HEAD
             consulta = "{CALL proc_delete_rol(?, @Respuesta)}"
             cursor.execute(consulta, rol.GetId())
+=======
+            consulta = "{CALL proc_delete_rol(?, @Respuesta);}"
+            cursor.execute(consulta, (rol.GetId()))
+>>>>>>> Cristian
             cursor.execute("SELECT @Respuesta;")
             codigo = cursor.fetchone()[0]
             conexion.commit()

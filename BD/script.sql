@@ -47,6 +47,7 @@ DELIMITER ;
 --mostrar todos los roles
 DELIMITER $$
 CREATE PROCEDURE `proc_select_rol`(
+CREATE PROCEDURE `proc_select_rol`(
     INOUT p_Respuesta INT
 )
 BEGIN
@@ -71,6 +72,7 @@ DELIMITER ;
 
 --actualizar rol
 DELIMITER $$
+CREATE PROCEDURE `proc_update_rol`(
 
 CREATE PROCEDURE `proc_update_rol`(
     IN p_Id INT,
@@ -683,6 +685,14 @@ CREATE TABLE usuarios (
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_rol) REFERENCES roles(id)
 ); 
+
+-- Tabla: devoluciones
+CREATE TABLE IF NOT EXISTS devoluciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_real_devolucion DATE NOT NULL,
+    estado_libro VARCHAR(50) NOT NULL,
+    observaciones TEXT
+);
 
 
 
