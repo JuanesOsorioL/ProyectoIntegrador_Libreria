@@ -1,5 +1,4 @@
 from Dtos.LibroCategoriaDTO import LibroCategoriaDTO
-from Entidades.LibroCategoria import LibroCategoria
 from Mapeadores.LibroCategoriaMapeadores import dto_a_libro_categoria, fila_a_libro_categoria, libro_categoria_a_dto
 from Dtos.Generico.Respuesta import Respuesta
 from Repositorios.LibroCategoriaRepositorio import LibroCategoriaRepositorio

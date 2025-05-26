@@ -16,7 +16,7 @@ class DevolucionServicio:
             devolucion = dto_a_devolucion(dto)
             nuevo_id, codigo = repositorio.insertarDevolucion(devolucion)
             if codigo == EXITO:
-                dev_tmp = Devolucion(id=nuevo_id)
+                dev_tmp = Devolucion(nuevo_id,None,None,None)
                 fila = repositorio.MostrarDevolucionPorId(dev_tmp)
                 dev = fila_a_devolucion(fila)
                 return Respuesta("Operación Exitosa", "Se guardó la devolución", [str(devolucion_a_dto(dev))])

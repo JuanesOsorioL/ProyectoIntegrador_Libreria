@@ -81,4 +81,3 @@ class UsuarioDTO:
             "rolId":          self.Get_RolId(),
             "RolDTO": self.Get_RolDTO().to_dict()
         }
-    

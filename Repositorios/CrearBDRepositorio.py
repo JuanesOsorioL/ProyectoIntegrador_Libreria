@@ -561,7 +561,6 @@ class CrearBDRepositorio:
                 """),
 
 
-
                 #Autores
                 ("proc_insert_autor", """
                 CREATE PROCEDURE proc_insert_autor(
@@ -576,12 +575,13 @@ class CrearBDRepositorio:
                         SET p_NuevoId = NULL;
                     ELSE
                         INSERT INTO autores (nombre, nacionalidad) VALUES (p_Nombre, p_Nacionalidad);
-                        SET p_NuevoId = LAST_INSERT_ID();
+                 SET p_NuevoId = LAST_INSERT_ID();
                         SET p_Respuesta = 1;
                     END IF;
                 END
                 """),
-                ("proc_select_autor", """
+
+                 ("proc_select_autor", """
                 CREATE PROCEDURE proc_select_autor()
                 BEGIN
                     SELECT id, nombre, nacionalidad FROM autores;
@@ -603,7 +603,7 @@ class CrearBDRepositorio:
                 BEGIN
                     IF EXISTS (SELECT 1 FROM autores WHERE id = p_Id) THEN
                         UPDATE autores SET nombre = p_Nombre, nacionalidad = p_Nacionalidad WHERE id = p_Id;
-                        SET p_Respuesta = 1;
+                 SET p_Respuesta = 1;
                     ELSE
                         SET p_Respuesta = 2;
                     END IF;
@@ -614,13 +614,79 @@ class CrearBDRepositorio:
                 BEGIN
                     IF EXISTS (SELECT 1 FROM autores WHERE id = p_id) THEN
                         DELETE FROM autores WHERE id = p_id;
+                 SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+
+
+
+
+
+                # Editorial
+                ("proc_insert_editorial", """
+                CREATE PROCEDURE proc_insert_editorial(
+                    IN p_Nombre VARCHAR(100),
+                    IN p_Pais VARCHAR(50),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE nombre = p_Nombre) THEN
+                        SET p_Respuesta = 2;
+                        SET p_NuevoId = NULL;
+                    ELSE
+                        INSERT INTO editoriales (nombre, pais) VALUES (p_Nombre, p_Pais);
+
+                        SET p_NuevoId = LAST_INSERT_ID();
+                        SET p_Respuesta = 1;
+                    END IF;
+                END
+                """),
+                ("proc_select_editorial", """
+                CREATE PROCEDURE proc_select_editorial()
+                BEGIN
+                    SELECT id, nombre, pais FROM editoriales;
+                END
+                """),
+                ("proc_select_editorial_por_id", """
+                CREATE PROCEDURE proc_select_editorial_por_id(IN p_id INT)
+                BEGIN
+                    SELECT id, nombre, pais FROM editoriales WHERE id = p_id;
+                END
+                """),
+                ("proc_update_editorial", """
+                CREATE PROCEDURE proc_update_editorial(
+                    IN p_Id INT,
+                    IN p_Nombre VARCHAR(100),
+                    IN p_Pais VARCHAR(50),
+                    INOUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE id = p_Id) THEN
+                        UPDATE editoriales SET nombre = p_Nombre, pais = p_Pais WHERE id = p_Id;
+
                         SET p_Respuesta = 1;
                     ELSE
                         SET p_Respuesta = 2;
                     END IF;
                 END
                 """),
-                                # CATEGORIAS
+                ("proc_delete_editorial", """
+                CREATE PROCEDURE proc_delete_editorial(IN p_id INT, INOUT p_Respuesta INT)
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM editoriales WHERE id = p_id) THEN
+                        DELETE FROM editoriales WHERE id = p_id;
+
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+                 # CATEGORIAS
                 ("proc_insert_categoria", """
                     CREATE PROCEDURE `proc_insert_categoria`(
                         IN p_Nombre VARCHAR(100),
@@ -837,91 +903,433 @@ class CrearBDRepositorio:
                         END IF;
                     END
                 """),
-                                    # EDITORIALES
-                    ("proc_insert_editorial", """
-                        CREATE PROCEDURE `proc_insert_editorial`(
-                            IN p_Nombre VARCHAR(100),
-                            IN p_Pais VARCHAR(50),
-                            OUT p_NuevoId INT,
-                            OUT p_Respuesta INT
-                        )
-                        BEGIN
-                            IF EXISTS (
-                                SELECT 1 FROM Libreria.editoriales 
-                                WHERE nombre = p_Nombre
-                            ) THEN
-                                SET p_Respuesta = 2;
-                                SET p_NuevoId = NULL;
-                            ELSE
-                                INSERT INTO Libreria.editoriales (nombre, pais) 
-                                VALUES (p_Nombre, p_Pais);
-                                SET p_NuevoId = LAST_INSERT_ID();
-                                SET p_Respuesta = 1;
-                            END IF;
-                        END
-                    """),
-                    ("proc_select_editorial", """
-                        CREATE PROCEDURE `proc_select_editorial`()
-                        BEGIN
-                            SELECT id, nombre, pais FROM Libreria.editoriales;
-                        END
-                    """),
-                    ("proc_select_editorial_por_id", """
-                        CREATE PROCEDURE `proc_select_editorial_por_id`(
-                            IN p_id INT
-                        )
-                        BEGIN
-                            SELECT id, nombre, pais 
-                            FROM Libreria.editoriales 
-                            WHERE id = p_id;
-                        END
-                    """),
-                    ("proc_update_editorial", """
-                        CREATE PROCEDURE `proc_update_editorial`(
-                            IN p_Id INT,
-                            IN p_Nombre VARCHAR(100),
-                            IN p_Pais VARCHAR(50),
-                            INOUT p_Respuesta INT
-                        )
-                        BEGIN
-                            IF EXISTS (
-                                SELECT 1 FROM Libreria.editoriales 
-                                WHERE id = p_Id
-                            ) THEN
-                                UPDATE Libreria.editoriales 
-                                SET nombre = p_Nombre, pais = p_Pais 
-                                WHERE id = p_Id;
-                                SET p_Respuesta = 1;
-                            ELSE
-                                SET p_Respuesta = 2;
-                            END IF;
-                        END
-                    """),
-                    ("proc_delete_editorial", """
-                        CREATE PROCEDURE `proc_delete_editorial`(
-                            IN p_id INT,
-                            INOUT p_Respuesta INT
-                        )
-                        BEGIN
-                            IF EXISTS (
-                                SELECT 1 FROM Libreria.editoriales 
-                                WHERE id = p_id
-                            ) THEN
-                                DELETE FROM Libreria.editoriales 
-                                WHERE id = p_id;
-                                SET p_Respuesta = 1;
-                            ELSE
-                                SET p_Respuesta = 2;
-                            END IF;
-                        END
-                    """)
 
+                # Devoluciones
+                ("proc_insert_devolucion", """
+                CREATE PROCEDURE proc_insert_devolucion (
+                    IN p_fecha DATE,
+                    IN p_estado VARCHAR(50),
+                    IN p_observaciones TEXT,
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                    BEGIN
+                        SET p_Respuesta = 0;
+                    END;
 
+                    INSERT INTO devoluciones (fecha_real_devolucion, estado_libro, observaciones)
+                    VALUES (p_fecha, p_estado, p_observaciones);
+
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_devolucion", """
+                CREATE PROCEDURE proc_select_devolucion()
+                BEGIN
+                    SELECT * FROM devoluciones;
+                END
+                """),
+                ("proc_select_devolucion_por_id", """
+                CREATE PROCEDURE proc_select_devolucion_por_id (
+                    IN p_id INT
+                )
+                BEGIN
+                    SELECT * FROM devoluciones WHERE id = p_id;
+                END
+                """),
+                ("proc_update_devolucion", """
+                CREATE PROCEDURE proc_update_devolucion (
+                    IN p_id INT,
+                    IN p_fecha DATE,
+                    IN p_estado VARCHAR(50),
+                    IN p_observaciones TEXT,
+                    OUT Respuesta INT
+                )
+                BEGIN
+                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+                    BEGIN
+                        SET Respuesta = 0;
+                    END;
+
+                    UPDATE devoluciones
+                    SET fecha_real_devolucion = p_fecha,
+                        estado_libro = p_estado,
+                        observaciones = p_observaciones
+                    WHERE id = p_id;
+
+                    IF ROW_COUNT() > 0 THEN
+                        SET Respuesta = 1;
+                    ELSE
+                        SET Respuesta = 2; -- No se encontró
+                    END IF;
+                END
+                """),
+                ("proc_delete_devolucion", """
+                CREATE PROCEDURE proc_delete_devolucion (
+                    IN p_id INT,
+                    OUT Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM devoluciones WHERE id = p_id;
+
+                    IF ROW_COUNT() > 0 THEN
+                        SET Respuesta = 1;
+                    ELSE
+                        SET Respuesta = 2;
+                    END IF;
+                END
+                """),
+
+                # Libros
+                ("proc_insert_libro", """
+                CREATE PROCEDURE proc_insert_libro(
+                    IN p_titulo VARCHAR(150),
+                    IN p_isbn VARCHAR(20),
+                    IN p_descripcion TEXT,
+                    IN p_anio YEAR,
+                    IN p_formato ENUM('Físico', 'Digital'),
+                    IN p_editorial_id INT,
+                    IN p_precio DECIMAL(10,2),
+                    IN p_stock INT,
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM libros WHERE isbn = p_isbn) THEN
+                        SET p_Respuesta = 2;
+                        SET p_NuevoId = NULL;
+                    ELSE
+                        INSERT INTO libros (titulo, isbn, descripcion, anio_publicacion, formato,
+                                            editorial_id, precio, stock)
+                        VALUES (p_titulo, p_isbn, p_descripcion, p_anio, p_formato,
+                                p_editorial_id, p_precio, p_stock);
+                        SET p_NuevoId = LAST_INSERT_ID();
+                        SET p_Respuesta = 1;
+                    END IF;
+                END
+                """),
+                ("proc_select_libros", """
+                CREATE PROCEDURE proc_select_libros()
+                BEGIN
+                    SELECT * FROM libros;
+                END
+                """),
+                ("proc_select_libro_por_id", """
+                CREATE PROCEDURE proc_select_libro_por_id(IN p_id INT)
+                BEGIN
+                    SELECT * FROM libros WHERE id = p_id;
+                END
+                """),
+                ("proc_update_libro", """
+                CREATE PROCEDURE proc_update_libro(
+                    IN p_id INT,
+                    IN p_titulo VARCHAR(150),
+                    IN p_isbn VARCHAR(20),
+                    IN p_descripcion TEXT,
+                    IN p_anio YEAR,
+                    IN p_formato ENUM('Físico', 'Digital'),
+                    IN p_editorial_id INT,
+                    IN p_precio DECIMAL(10,2),
+                    IN p_stock INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM libros WHERE id = p_id) THEN
+                        UPDATE libros
+                        SET titulo = p_titulo,
+                            isbn = p_isbn,
+                            descripcion = p_descripcion,
+                            anio_publicacion = p_anio,
+                            formato = p_formato,
+                            editorial_id = p_editorial_id,
+                            precio = p_precio,
+                            stock = p_stock
+                        WHERE id = p_id;
+
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+                ("proc_delete_libro", """
+                CREATE PROCEDURE proc_delete_libro(IN p_id INT, OUT p_Respuesta INT)
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM libros WHERE id = p_id) THEN
+                        DELETE FROM libros WHERE id = p_id;
+                        SET p_Respuesta = 1;
+                    ELSE
+                        SET p_Respuesta = 2;
+                    END IF;
+                END
+                """),
+
+                # Ventas
+                ("proc_insert_venta","""
+                CREATE PROCEDURE proc_insert_venta(
+                    IN p_usuario_id INT,
+                    IN p_empleado_id INT,
+                    IN p_total DECIMAL(10,2),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO ventas (usuario_id, empleado_id, total)
+                    VALUES (p_usuario_id, p_empleado_id, p_total);
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_ventas", """
+                CREATE PROCEDURE proc_select_ventas()
+                BEGIN
+                    SELECT * FROM ventas;
+                END
+                """),
+                ("proc_select_venta_por_id", """
+                CREATE PROCEDURE proc_select_venta_por_id(IN p_id INT)
+                BEGIN
+                    SELECT * FROM ventas WHERE id = p_id;
+                END
+                """),
+                ("proc_update_venta", """
+                CREATE PROCEDURE proc_update_venta(
+                    IN p_id INT,
+                    IN p_usuario_id INT,
+                    IN p_empleado_id INT,
+                    IN p_fecha DATETIME,
+                    IN p_total DECIMAL(10,2),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE ventas
+                    SET usuario_id = p_usuario_id,
+                        empleado_id = p_empleado_id,
+                        fecha = p_fecha,
+                        total = p_total
+                    WHERE id = p_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                """),
+                ("proc_delete_venta", """
+                CREATE PROCEDURE proc_delete_venta(
+                    IN p_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM ventas WHERE id = p_id;
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                """),
+                
+                #Detalle Venta
+
+                ("proc_insert_detalle_venta", """
+                CREATE PROCEDURE proc_insert_detalle_venta(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    IN p_precio_unitario DECIMAL(10,2),
+                    IN p_subtotal DECIMAL(10,2),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO detalle_venta (venta_id, libro_id, cantidad, precio_unitario, subtotal)
+                    VALUES (p_venta_id, p_libro_id, p_cantidad, p_precio_unitario, p_subtotal);
+                    SET p_Respuesta = 1;
+                END
+                  """),
+                ("proc_select_detalles_venta", """
+                CREATE PROCEDURE proc_select_detalles_venta()
+                BEGIN
+                    SELECT * FROM detalle_venta;
+                END
+                """),
+                ("proc_select_detalle_por_id", """
+                CREATE PROCEDURE proc_select_detalle_por_id(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_venta
+                    WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
+                END
+                 """),
+                ("proc_select_detalles_por_venta", """
+                CREATE PROCEDURE proc_select_detalles_por_venta(
+                    IN p_venta_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_venta WHERE venta_id = p_venta_id;
+                END
+                 """),
+                ("proc_update_detalle_venta", """
+                CREATE PROCEDURE proc_update_detalle_venta(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    IN p_precio_unitario DECIMAL(10,2),
+                    IN p_subtotal DECIMAL(10,2),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE detalle_venta
+                    SET cantidad = p_cantidad,
+                        precio_unitario = p_precio_unitario,
+                        subtotal = p_subtotal
+                    WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                 """),
+                ("proc_delete_detalle_venta", """
+                CREATE PROCEDURE proc_delete_detalle_venta(
+                    IN p_venta_id INT,
+                    IN p_libro_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM detalle_venta
+                    WHERE venta_id = p_venta_id AND libro_id = p_libro_id;
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                """),
+                
+                #Prestamo
+                ("proc_insert_prestamo", """
+                CREATE PROCEDURE proc_insert_prestamo(
+                    IN p_usuario_id INT,
+                    IN p_empleado_id INT,
+                    IN p_fecha_prestamo DATE,
+                    IN p_fecha_devolucion DATE,
+                    IN p_estado VARCHAR(20),
+                    OUT p_NuevoId INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO prestamos (usuario_id, empleado_id, fecha_prestamo, fecha_devolucion, estado)
+                    VALUES (p_usuario_id, p_empleado_id, p_fecha_prestamo, p_fecha_devolucion, p_estado);
+                    SET p_NuevoId = LAST_INSERT_ID();
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_prestamos", """
+                CREATE PROCEDURE proc_select_prestamos()
+                BEGIN
+                    SELECT * FROM prestamos;
+                END
+                 """),
+                ("proc_select_prestamo_por_id", """
+                CREATE PROCEDURE proc_select_prestamo_por_id(IN p_id INT)
+                BEGIN
+                    SELECT * FROM prestamos WHERE id = p_id;
+                END
+                 """),
+                ("proc_update_prestamo", """
+                CREATE PROCEDURE proc_update_prestamo(
+                    IN p_id INT,
+                    IN p_usuario_id INT,
+                    IN p_empleado_id INT,
+                    IN p_fecha_prestamo DATE,
+                    IN p_fecha_devolucion DATE,
+                    IN p_estado VARCHAR(20),
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE prestamos
+                    SET usuario_id = p_usuario_id,
+                        empleado_id = p_empleado_id,
+                        fecha_prestamo = p_fecha_prestamo,
+                        fecha_devolucion = p_fecha_devolucion,
+                        estado = p_estado
+                    WHERE id = p_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                 """),
+                ("proc_delete_prestamo", """
+                CREATE PROCEDURE proc_delete_prestamo(
+                    IN p_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM prestamos WHERE id = p_id;
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                 """),
+
+                 # Detalle Prestamo
+                ("proc_insert_detalle_prestamo", """
+                CREATE PROCEDURE proc_insert_detalle_prestamo(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    INSERT INTO detalle_prestamo (prestamo_id, libro_id, cantidad)
+                    VALUES (p_prestamo_id, p_libro_id, p_cantidad);
+                    SET p_Respuesta = 1;
+                END
+                """),
+                ("proc_select_detalles_prestamo", """
+                CREATE PROCEDURE proc_select_detalles_prestamo()
+                BEGIN
+                    SELECT * FROM detalle_prestamo;
+                END
+                """),
+                ("proc_select_detalle_prestamo_por_id", """
+                CREATE PROCEDURE proc_select_detalle_prestamo_por_id(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_prestamo
+                    WHERE prestamo_id = p_prestamo_id AND libro_id = p_libro_id;
+                END
+                """),
+                ("proc_select_detalles_por_prestamo", """
+                CREATE PROCEDURE proc_select_detalles_por_prestamo(
+                    IN p_prestamo_id INT
+                )
+                BEGIN
+                    SELECT * FROM detalle_prestamo
+                    WHERE prestamo_id = p_prestamo_id;
+                END
+                """),
+                ("proc_update_detalle_prestamo", """
+                CREATE PROCEDURE proc_update_detalle_prestamo(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT,
+                    IN p_cantidad INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    UPDATE detalle_prestamo
+                    SET cantidad = p_cantidad
+                    WHERE prestamo_id = p_prestamo_id AND libro_id = p_libro_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                """),
+                ("proc_delete_detalle_prestamo", """
+                CREATE PROCEDURE proc_delete_detalle_prestamo(
+                    IN p_prestamo_id INT,
+                    IN p_libro_id INT,
+                    OUT p_Respuesta INT
+                )
+                BEGIN
+                    DELETE FROM detalle_prestamo
+                    WHERE prestamo_id = p_prestamo_id AND libro_id = p_libro_id;
+
+                    SET p_Respuesta = ROW_COUNT() > 0;
+                END
+                """)
             ]
-
-
-
-
 
             for name, ddl in procedimientos:
                 cursor.execute(f"DROP PROCEDURE IF EXISTS {name};")

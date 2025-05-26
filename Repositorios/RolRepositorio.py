@@ -4,6 +4,7 @@ from Utilidades.Configuracion import Configuracion
 
 class RolRepositorio:
 
+
     def insertarRol(self, rol: Rol) -> tuple:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
@@ -15,6 +16,7 @@ class RolRepositorio:
             resultado = cursor.fetchone()
             conexion.commit()
             return resultado
+
         finally:
             cursor.close()
             conexion.close()
@@ -37,7 +39,6 @@ class RolRepositorio:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
             consulta = "{CALL proc_select_rol_por_id(?)}"
-
             cursor.execute(consulta, rol.GetId())
             resultado = cursor.fetchone()
             return resultado
