@@ -6,9 +6,8 @@ devolucionServicio = DevolucionServicio()
 
 class DevolucionControlador:
 
-    def insertarDevolucion(self, fecha: str, estado: str, observaciones: str) -> Respuesta:
-        dto = DevolucionDTO(fecha_real_devolucion=fecha, estado_libro=estado, observaciones=observaciones)
-        print(str(dto))
+    def insertarDevolucion(self,prestamo_id: str, fecha: str, estado: str, observaciones: str) -> Respuesta:
+        dto = DevolucionDTO(prestamo_id=prestamo_id,fecha_real_devolucion=fecha, estado_libro=estado, observaciones=observaciones)
         return devolucionServicio.insertarDevolucion(dto)
 
     def mostrarTodasLasDevoluciones(self) -> Respuesta:
@@ -18,8 +17,8 @@ class DevolucionControlador:
         dto = DevolucionDTO(id=id)
         return devolucionServicio.MostrarDevolucionPorId(dto)
 
-    def actualizarDevolucion(self, id: int, fecha: str, estado: str, observaciones: str) -> Respuesta:
-        dto = DevolucionDTO(id=id, fecha_real_devolucion=fecha, estado_libro=estado, observaciones=observaciones)
+    def actualizarDevolucion(self, id: int,prestamo_id: str, fecha: str, estado: str, observaciones: str) -> Respuesta:
+        dto = DevolucionDTO(id=id,prestamo_id=prestamo_id, fecha_real_devolucion=fecha, estado_libro=estado, observaciones=observaciones)
         return devolucionServicio.actualizarDevolucion(dto)
 
     def borrarDevolucion(self, id: int) -> Respuesta:

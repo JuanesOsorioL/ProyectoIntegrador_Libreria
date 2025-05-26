@@ -14,12 +14,15 @@ class DevolucionServicio:
     def insertarDevolucion(self, dto: DevolucionDTO) -> Respuesta:
         try:
             devolucion = dto_a_devolucion(dto)
+            
             nuevo_id, codigo = repositorio.insertarDevolucion(devolucion)
+            print(nuevo_id, codigo)
             if codigo == EXITO:
+                
                 dev_tmp = Devolucion(nuevo_id,None,None,None)
                 fila = repositorio.MostrarDevolucionPorId(dev_tmp)
                 dev = fila_a_devolucion(fila)
-                return Respuesta("Operación Exitosa", "Se guardó la devolución", [str(devolucion_a_dto(dev))])
+                return Respuesta("Operación Exitosa", "Se guardó la devolución", (devolucion_a_dto(dev)).to_dict_simple())
             elif codigo == YA_EXISTE:
                 return Respuesta("Operación Fallida", "La devolución ya existe", [])
             else:
@@ -27,12 +30,16 @@ class DevolucionServicio:
         except Exception as e:
             return Respuesta("Error Sistema", f"Error al insertar devolución: {str(e)}", [])
 
+
+
+
+
     def MostrarTodasLasDevoluciones(self) -> Respuesta:
         try:
             filas = repositorio.MostrarTodasLasDevoluciones()
-            listaDTO = [devolucion_a_dto(fila_a_devolucion(f)) for f in filas]
+            listaDTO = [devolucion_a_dto(fila_a_devolucion(f)).to_dict_simple() for f in filas]
             if listaDTO:
-                return Respuesta("Operación Exitosa", "Lista de devoluciones", [str(d) for d in listaDTO])
+                return Respuesta("Operación Exitosa", "Lista de devoluciones", [(d) for d in listaDTO])
             else:
                 return Respuesta("Operación Exitosa", "No hay devoluciones registradas", [])
         except Exception as e:
@@ -44,7 +51,7 @@ class DevolucionServicio:
             fila = repositorio.MostrarDevolucionPorId(devolucion)
             if fila:
                 dto_final = devolucion_a_dto(fila_a_devolucion(fila))
-                return Respuesta("Operación Exitosa", "Devolución encontrada", [str(dto_final)])
+                return Respuesta("Operación Exitosa", "Devolución encontrada", dto_final.to_dict_simple())
             else:
                 return Respuesta("Operación Fallida", "No existe devolución con ese ID", [])
         except Exception as e:
@@ -57,7 +64,7 @@ class DevolucionServicio:
             if codigo == EXITO:
                 fila = repositorio.MostrarDevolucionPorId(devolucion)
                 dev_actualizada = fila_a_devolucion(fila)
-                return Respuesta("Operación Exitosa", "Actualización exitosa", [str(devolucion_a_dto(dev_actualizada))])
+                return Respuesta("Operación Exitosa", "Actualización exitosa", devolucion_a_dto(dev_actualizada).to_dict_simple())
             else:
                 return Respuesta("Operación Fallida", "No se encontró la devolución a actualizar", [])
         except Exception as e:
@@ -72,7 +79,7 @@ class DevolucionServicio:
             codigo = repositorio.borrarDevolucion(devolucion)
             if codigo == EXITO:
                 dev_eliminada = fila_a_devolucion(fila)
-                return Respuesta("Operación Exitosa", "Devolución eliminada", [str(devolucion_a_dto(dev_eliminada))])
+                return Respuesta("Operación Exitosa", "Devolución eliminada", devolucion_a_dto(dev_eliminada).to_dict_simple())
             else:
                 return Respuesta("Operación Fallida", "No se pudo eliminar la devolución", [])
         except Exception as e:

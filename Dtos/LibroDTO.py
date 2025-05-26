@@ -14,3 +14,17 @@ class LibroDTO:
     def __str__(self):
         return (f"Id={self.id}, Titulo='{self.titulo}', ISBN='{self.isbn}', Año={self.anio_publicacion}, "
                 f"Formato='{self.formato}', Editorial={self.editorial_id}, Precio={self.precio}, Stock={self.stock}")
+    
+
+    def to_dict_simple(self):
+        return {
+            "Id":self.id, 
+            "Titulo":self.titulo, 
+            "ISBN":self.isbn, 
+            "Año":self.anio_publicacion, 
+            "descripcion":self.descripcion,
+            "Formato":self.formato, 
+            "Editorial":self.editorial_id,
+            "Precio":self.precio,
+            "Stock":self.stock
+            }

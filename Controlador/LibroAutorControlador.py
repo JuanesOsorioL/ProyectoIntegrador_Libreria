@@ -17,8 +17,8 @@ class LibroAutorControlador:
         libroAutorDTO = LibroAutorDTO(libro_id=libro_id, autor_id=autor_id)
         return libroAutorServicio.mostrarLibroAutorPorId(libroAutorDTO)
     
-    def actualizarLibroAutor(self, id: int, libro_id: int, autor_id: int) -> Respuesta:
-        libroAutorDTO = LibroAutorDTO(id=id, libro_id=libro_id, autor_id=autor_id)
+    def actualizarLibroAutor(self, libro_id: int, autor_id: int,antes_libro_id: int, antes_autor_id: int) -> Respuesta:
+        libroAutorDTO = LibroAutorDTO(libro_id, autor_id,antes_libro_id,antes_autor_id)
         return libroAutorServicio.actualizarLibroAutor(libroAutorDTO)
 
     def borrarLibroAutor(self, libro_id: int, autor_id: int) -> Respuesta:

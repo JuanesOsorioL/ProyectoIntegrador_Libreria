@@ -28,3 +28,10 @@ class AutorDTO:
 
     def __str__(self) -> str:
         return f"Id='{self.id}', Nombre='{self.nombre}', Nacionalidad='{self.nacionalidad}'"
+
+    def to_dict_simple(self):
+        return {
+            "id":             self.GetId(),
+            "nombre":         self.GetNombre(),
+            "Nacionalidad":      self.GetNacionalidad()
+        }

@@ -1,6 +1,6 @@
 from Dtos.DetalleVentaDTO import DetalleVentaDTO
 from Repositorios.DetalleVentaRepositorio import DetalleVentaRepositorio
-from Mapeadores.Mapeadores import (
+from Mapeadores.DetalleVentaMapeadores import (
     detalle_venta_a_dto,
     dto_a_detalle_venta,
     fila_a_detalle_venta
@@ -18,26 +18,26 @@ class DetalleVentaServicio:
         if codigo == 1:
             fila = self.repositorio.mostrarPorId(detalle.venta_id, detalle.libro_id)
             nuevo = fila_a_detalle_venta(fila)
-            return Respuesta("Operación Exitosa", "Detalle registrado", [str(detalle_venta_a_dto(nuevo))])
+            return Respuesta("Operación Exitosa", "Detalle registrado", detalle_venta_a_dto(nuevo).to_dict_simple())
         else:
             return Respuesta("Fallido", "No se pudo insertar el detalle", [])
 
     def mostrarTodos(self) -> Respuesta:
         filas = self.repositorio.mostrarTodos()
-        resultado = [str(detalle_venta_a_dto(fila_a_detalle_venta(f))) for f in filas]
+        resultado = [detalle_venta_a_dto(fila_a_detalle_venta(f)).to_dict_simple() for f in filas]
         return Respuesta("Operación Exitosa", "Listado de detalles de venta", resultado)
 
     def mostrarPorId(self, dto: DetalleVentaDTO) -> Respuesta:
         fila = self.repositorio.mostrarPorId(dto.venta_id, dto.libro_id)
         if fila:
             detalle = fila_a_detalle_venta(fila)
-            return Respuesta("Operación Exitosa", "Detalle encontrado", [str(detalle_venta_a_dto(detalle))])
+            return Respuesta("Operación Exitosa", "Detalle encontrado", detalle_venta_a_dto(detalle).to_dict_simple())
         else:
             return Respuesta("Fallido", "Detalle no encontrado", [])
 
     def mostrarPorVenta(self, venta_id: int) -> Respuesta:
         filas = self.repositorio.mostrarPorVenta(venta_id)
-        resultado = [str(detalle_venta_a_dto(fila_a_detalle_venta(f))) for f in filas]
+        resultado = [detalle_venta_a_dto(fila_a_detalle_venta(f)).to_dict_simple() for f in filas]
         return Respuesta("Operación Exitosa", f"Detalles de la venta {venta_id}", resultado)
 
     def actualizarDetalle(self, dto: DetalleVentaDTO) -> Respuesta:
@@ -46,7 +46,7 @@ class DetalleVentaServicio:
         if codigo == 1:
             fila = self.repositorio.mostrarPorId(detalle.venta_id, detalle.libro_id)
             actualizado = fila_a_detalle_venta(fila)
-            return Respuesta("Operación Exitosa", "Detalle actualizado", [str(detalle_venta_a_dto(actualizado))])
+            return Respuesta("Operación Exitosa", "Detalle actualizado", detalle_venta_a_dto(actualizado).to_dict_simple())
         else:
             return Respuesta("Fallido", "No se pudo actualizar el detalle", [])
 
@@ -57,7 +57,7 @@ class DetalleVentaServicio:
         codigo = self.repositorio.borrarDetalle(dto.venta_id, dto.libro_id)
         if codigo == 1:
             detalle = fila_a_detalle_venta(fila)
-            return Respuesta("Operación Exitosa", "Detalle eliminado", [str(detalle_venta_a_dto(detalle))])
+            return Respuesta("Operación Exitosa", "Detalle eliminado", detalle_venta_a_dto(detalle).to_dict_simple())
         else:
             return Respuesta("Fallido", "No se pudo eliminar", [])
     

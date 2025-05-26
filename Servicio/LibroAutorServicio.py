@@ -15,17 +15,13 @@ class LibroAutorServicio:
         try:
             libro_autor = dto_a_libro_autor(libroAutorDTO)
             resultado = repositorio.insertarLibroAutor(libro_autor)
-            nuevo_id, codigo = resultado
-            if codigo == EXITO:
-                nuevoRelacion = LibroAutor(id=nuevo_id, id_libro=libroAutorDTO.id_libro, id_autor=libroAutorDTO.id_autor)
-                resultadoRelacion = repositorio.mostrarLibroAutorPorId(nuevoRelacion)
-                relacion_encontrada = fila_a_libro_autor(resultadoRelacion)
+            if resultado == EXITO:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Se guardó la relación libro-autor",
-                    resultado=[str(libro_autor_a_dto(relacion_encontrada))]
+                    resultado=(libro_autor_a_dto(libroAutorDTO)).to_dict_simple()
                 )
-            elif codigo == YA_EXISTE:
+            elif resultado == YA_EXISTE:
                 return Respuesta(
                     estado="Operación Fallida",
                     msj="La relación ya existe",
@@ -48,14 +44,17 @@ class LibroAutorServicio:
         try:
             listaDTO = []
             lista = repositorio.mostrarTodosLosLibroAutor()
+            print(lista)
+
+
             for item in lista:
-                relacion = LibroAutor(id=item[0], id_libro=item[1], id_autor=item[2])
-                listaDTO.append(libro_autor_a_dto(relacion))
+                relacion = LibroAutor(item[0], item[1])
+                listaDTO.append(libro_autor_a_dto(relacion).to_dict_simple())
             if listaDTO:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Existen relaciones registradas",
-                    resultado=[str(dto) for dto in listaDTO]
+                    resultado=[(dto) for dto in listaDTO]
                 )
             else:
                 return Respuesta(
@@ -73,13 +72,15 @@ class LibroAutorServicio:
     def mostrarLibroAutorPorId(self, libroAutorDTO: LibroAutorDTO) -> Respuesta:
         try:
             relacion = dto_a_libro_autor(libroAutorDTO)
+            print(libroAutorDTO)
             resultado = repositorio.mostrarLibroAutorPorId(relacion)
+            print(resultado)
             if resultado:
                 encontrada = fila_a_libro_autor(resultado)
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Relación encontrada",
-                    resultado=[str(libro_autor_a_dto(encontrada))]
+                    resultado=(libro_autor_a_dto(encontrada)).to_dict_simple()
                 )
             else:
                 return Respuesta(
@@ -97,7 +98,7 @@ class LibroAutorServicio:
     def actualizarLibroAutor(self, libroAutorDTO: LibroAutorDTO) -> Respuesta:
         try:
             relacion = dto_a_libro_autor(libroAutorDTO)
-            codigo = repositorio.actualizarLibroAutor(relacion)
+            codigo = repositorio.actualizarLibroAutor(relacion,libroAutorDTO.GetAntesAutorId(),libroAutorDTO.GetAntesLibroId())
             if codigo == EXITO:
                 resultado = repositorio.mostrarLibroAutorPorId(relacion)
                 actualizada = fila_a_libro_autor(resultado)
@@ -121,8 +122,10 @@ class LibroAutorServicio:
 
     def borrarLibroAutor(self, libroAutorDTO: LibroAutorDTO) -> Respuesta:
         try:
+            print(libroAutorDTO)
             relacion = dto_a_libro_autor(libroAutorDTO)
             existe = repositorio.mostrarLibroAutorPorId(relacion)
+            print(existe)
             if not existe:
                 return Respuesta(
                     estado="Operación Fallida",

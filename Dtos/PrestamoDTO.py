@@ -11,3 +11,13 @@ class PrestamoDTO:
     def __str__(self):
         return (f"ID: {self.id}, Usuario ID: {self.usuario_id}, Empleado ID: {self.empleado_id}, "
                 f"Fecha Préstamo: {self.fecha_prestamo}, Fecha Devolución: {self.fecha_devolucion}, Estado: {self.estado}")
+
+    def to_dict_simple(self):
+        return {
+            "Id": self.id,
+            "UsuarioId": self.usuario_id,
+            "EmpleadoId": self.empleado_id,
+            "FechaPrestamo": self.fecha_prestamo,
+            "FechaDevolucion": self.fecha_devolucion,
+            "Estado": self.estado
+        }

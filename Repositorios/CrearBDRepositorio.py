@@ -827,105 +827,110 @@ class CrearBDRepositorio:
                 """),
                 # LIBRO AUTORES
                 ("proc_insert_libro_autor", """
-                    CREATE PROCEDURE `proc_insert_libro_autor`(
-                        IN p_IdLibro INT,
-                        IN p_IdAutor INT,
-                        OUT p_NuevoId INT,
-                        OUT p_Respuesta INT
-                    )
-                    BEGIN
-                        IF EXISTS (
-                            SELECT 1 FROM Libreria.libro_autor 
-                            WHERE id_libro = p_IdLibro AND id_autor = p_IdAutor
-                        ) THEN
-                            SET p_Respuesta = 2; -- Relación ya existe
-                            SET p_NuevoId = NULL;
-                        ELSE
-                            INSERT INTO Libreria.libro_autor (id_libro, id_autor) 
-                            VALUES (p_IdLibro, p_IdAutor);
-                            SET p_NuevoId = LAST_INSERT_ID();
-                            SET p_Respuesta = 1; -- Inserción exitosa
-                        END IF;
-                    END
+                   CREATE PROCEDURE `proc_insert_libro_autor`(
+    IN p_IdLibro INT,
+    IN p_IdAutor INT,
+    OUT p_Respuesta INT
+)
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Libreria.libro_autor 
+        WHERE libro_id = p_IdLibro AND autor_id = p_IdAutor
+    ) THEN
+        SET p_Respuesta = 2; -- Ya existe la relación
+    ELSE
+        INSERT INTO Libreria.libro_autor (libro_id, autor_id) 
+        VALUES (p_IdLibro, p_IdAutor);
+        SET p_Respuesta = 1; -- Inserción exitosa
+    END IF;
+END
                 """),
                 ("proc_select_libro_autor", """
                     CREATE PROCEDURE `proc_select_libro_autor`()
-                    BEGIN
-                        SELECT id, id_libro, id_autor FROM Libreria.libro_autor;
-                    END
+BEGIN
+    SELECT libro_id, autor_id FROM Libreria.libro_autor;
+END
                 """),
                 ("proc_select_libro_autor_por_id", """
                     CREATE PROCEDURE `proc_select_libro_autor_por_id`(
-                        IN p_Id INT
-                    )
-                    BEGIN
-                        SELECT id, id_libro, id_autor 
-                        FROM Libreria.libro_autor 
-                        WHERE id = p_Id;
-                    END
+    IN p_IdLibro INT,
+    IN p_IdAutor INT
+)
+BEGIN
+    SELECT libro_id, autor_id 
+    FROM Libreria.libro_autor 
+    WHERE libro_id = p_IdLibro AND autor_id = p_IdAutor;
+END
                 """),
                 ("proc_update_libro_autor", """
                     CREATE PROCEDURE `proc_update_libro_autor`(
-                        IN p_Id INT,
-                        IN p_IdLibro INT,
-                        IN p_IdAutor INT,
-                        INOUT p_Respuesta INT
-                    )
-                    BEGIN
-                        IF EXISTS (
-                            SELECT 1 FROM Libreria.libro_autor 
-                            WHERE id = p_Id
-                        ) THEN
-                            UPDATE Libreria.libro_autor 
-                            SET id_libro = p_IdLibro, id_autor = p_IdAutor 
-                            WHERE id = p_Id;
-                            SET p_Respuesta = 1; -- Actualización exitosa
-                        ELSE
-                            SET p_Respuesta = 2; -- Relación no encontrada
-                        END IF;
-                    END
+    IN p_LibroIdAnterior INT,
+    IN p_AutorIdAnterior INT,
+    IN p_LibroIdNuevo INT,
+    IN p_AutorIdNuevo INT,
+    OUT p_Respuesta INT
+)
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Libreria.libro_autor 
+        WHERE libro_id = p_LibroIdAnterior AND autor_id = p_AutorIdAnterior
+    ) THEN
+        DELETE FROM Libreria.libro_autor 
+        WHERE libro_id = p_LibroIdAnterior AND autor_id = p_AutorIdAnterior;
+
+        INSERT INTO Libreria.libro_autor (libro_id, autor_id)
+        VALUES (p_LibroIdNuevo, p_AutorIdNuevo);
+
+        SET p_Respuesta = 1; -- Actualización exitosa
+    ELSE
+        SET p_Respuesta = 2; -- Relación original no encontrada
+    END IF;
+END
                 """),
                 ("proc_delete_libro_autor", """
                     CREATE PROCEDURE `proc_delete_libro_autor`(
-                        IN p_Id INT,
-                        INOUT p_Respuesta INT
-                    )
-                    BEGIN
-                        IF EXISTS (
-                            SELECT 1 FROM Libreria.libro_autor 
-                            WHERE id = p_Id
-                        ) THEN
-                            DELETE FROM Libreria.libro_autor 
-                            WHERE id = p_Id;
-                            SET p_Respuesta = 1; -- Eliminación exitosa
-                        ELSE
-                            SET p_Respuesta = 2; -- Relación no encontrada
-                        END IF;
-                    END
+    IN p_IdLibro INT,
+    IN p_IdAutor INT,
+    OUT p_Respuesta INT
+)
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Libreria.libro_autor 
+        WHERE libro_id = p_IdLibro AND autor_id = p_IdAutor
+    ) THEN
+        DELETE FROM Libreria.libro_autor 
+        WHERE libro_id = p_IdLibro AND autor_id = p_IdAutor;
+        SET p_Respuesta = 1; -- Eliminación exitosa
+    ELSE
+        SET p_Respuesta = 2; -- Relación no encontrada
+    END IF;
+END
                 """),
 
                 # Devoluciones
                 ("proc_insert_devolucion", """
-                CREATE PROCEDURE proc_insert_devolucion (
-                    IN p_fecha DATE,
-                    IN p_estado VARCHAR(50),
-                    IN p_observaciones TEXT,
-                    OUT p_NuevoId INT,
-                    OUT p_Respuesta INT
-                )
-                BEGIN
-                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-                    BEGIN
-                        SET p_Respuesta = 0;
-                    END;
+CREATE PROCEDURE proc_insert_devolucion (
+    IN p_prestamo_id INT,
+    IN p_fecha DATE,
+    IN p_estado VARCHAR(50),
+    IN p_observaciones TEXT,
+    OUT p_NuevoId INT,
+    OUT p_Respuesta INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET p_Respuesta = 0;
+    END;
 
-                    INSERT INTO devoluciones (fecha_real_devolucion, estado_libro, observaciones)
-                    VALUES (p_fecha, p_estado, p_observaciones);
+    INSERT INTO devoluciones (prestamo_id, fecha_real_devolucion, estado_libro, observaciones)
+    VALUES (p_prestamo_id, p_fecha, p_estado, p_observaciones);
 
-                    SET p_NuevoId = LAST_INSERT_ID();
-                    SET p_Respuesta = 1;
-                END
-                """),
+    SET p_NuevoId = LAST_INSERT_ID();
+    SET p_Respuesta = 1;
+END
+"""),
+
                 ("proc_select_devolucion", """
                 CREATE PROCEDURE proc_select_devolucion()
                 BEGIN
@@ -941,32 +946,35 @@ class CrearBDRepositorio:
                 END
                 """),
                 ("proc_update_devolucion", """
-                CREATE PROCEDURE proc_update_devolucion (
-                    IN p_id INT,
-                    IN p_fecha DATE,
-                    IN p_estado VARCHAR(50),
-                    IN p_observaciones TEXT,
-                    OUT Respuesta INT
-                )
-                BEGIN
-                    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-                    BEGIN
-                        SET Respuesta = 0;
-                    END;
+CREATE PROCEDURE proc_update_devolucion (
+    IN p_id INT,
+    IN p_prestamo_id INT,
+    IN p_fecha DATE,
+    IN p_estado VARCHAR(50),
+    IN p_observaciones TEXT,
+    OUT Respuesta INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET Respuesta = 0;
+    END;
 
-                    UPDATE devoluciones
-                    SET fecha_real_devolucion = p_fecha,
-                        estado_libro = p_estado,
-                        observaciones = p_observaciones
-                    WHERE id = p_id;
+    UPDATE devoluciones
+    SET prestamo_id = p_prestamo_id,
+        fecha_real_devolucion = p_fecha,
+        estado_libro = p_estado,
+        observaciones = p_observaciones
+    WHERE id = p_id;
 
-                    IF ROW_COUNT() > 0 THEN
-                        SET Respuesta = 1;
-                    ELSE
-                        SET Respuesta = 2; -- No se encontró
-                    END IF;
-                END
-                """),
+    IF ROW_COUNT() > 0 THEN
+        SET Respuesta = 1;
+    ELSE
+        SET Respuesta = 2; -- No se encontró
+    END IF;
+END
+"""),
+
                 ("proc_delete_devolucion", """
                 CREATE PROCEDURE proc_delete_devolucion (
                     IN p_id INT,

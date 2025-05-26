@@ -23,7 +23,7 @@ class EditorialServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Se guardó la nueva Editorial",
-                    resultado=[str(editorial_a_dto(editorial_encontrada))]
+                    resultado=(editorial_a_dto(editorial_encontrada)).to_dict_simple()
                 )
             elif codigo == EDITORIAL_EXISTE:
                 return Respuesta(
@@ -50,12 +50,12 @@ class EditorialServicio:
             lista = repositorio.MostrarTodasLasEditoriales()
             for item in lista:
                 editorial = Editorial(id=item[0], nombre=item[1], pais=item[2])
-                listaDTO.append(editorial_a_dto(editorial))
+                listaDTO.append(editorial_a_dto(editorial).to_dict_simple())
             if listaDTO:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Existen editoriales registradas",
-                    resultado=[str(dto) for dto in listaDTO]
+                    resultado=[(dto) for dto in listaDTO]
                 )
             else:
                 return Respuesta(
@@ -79,7 +79,7 @@ class EditorialServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Editorial encontrada",
-                    resultado=[str(editorial_a_dto(editorial_encontrada))]
+                    resultado=(editorial_a_dto(editorial_encontrada)).to_dict_simple()
                 )
             else:
                 return Respuesta(
@@ -104,7 +104,7 @@ class EditorialServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Editorial actualizada correctamente",
-                    resultado=[str(editorial_a_dto(editorialActualizada))]
+                    resultado=(editorial_a_dto(editorialActualizada)).to_dict_simple()
                 )
             elif codigo == EDITORIAL_EXISTE:
                 return Respuesta(
@@ -141,7 +141,7 @@ class EditorialServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="La editorial se eliminó correctamente",
-                    resultado=[str(editorial_a_dto(editorialEliminada))]
+                    resultado=(editorial_a_dto(editorialEliminada)).to_dict_simple()
                 )
             elif codigo == EDITORIAL_EXISTE:
                 return Respuesta(

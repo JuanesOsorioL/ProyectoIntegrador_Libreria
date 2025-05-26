@@ -32,10 +32,6 @@ class RolServicio:
             rol.SetNombre(packed)
             rol.SetNombreHmac(hmac_val)
             resultado=repositorio.insertarRol(rol)
-            packed, hmac_val = aeshmac.sellar(rol.GetNombre())
-            rol.SetNombre(packed)
-            rol.SetNombreHmac(hmac_val)
-            resultado=repositorio.insertarRol(rol)
             nuevo_id, codigo = resultado
             if codigo==EXITO:
                 rol.SetId(nuevo_id)
@@ -46,9 +42,10 @@ class RolServicio:
                 return Respuesta("Operación Fallida","Rol ya Existe",[])
             else:
                 return Respuesta("Operación Fallida","No se realizo el guardado",[])
+
         except Exception as ex:
             return Respuesta("Error Sistema",f"Error en la inserción: {ex}",[])
-          
+
     def MostrarTodosLosRoles(self) -> Respuesta:
         try:
             lista_roles = []
@@ -72,18 +69,9 @@ class RolServicio:
             return Respuesta("Operación Fallida", "No existe rol con ese ID", [])
         except Exception as ex:
             return Respuesta("Error Sistema", f"Error al buscar rol: {str(ex)}", [])
-          
+
     def actualizarRol(self, rolDTO: RolDTO) -> Respuesta:
         try:
-            # Verificar si el rol existe
-            rol = dto_a_rol(rolDTO)
-            fila_existente = repositorio.MostrarRolPorId(rol)
-            if not fila_existente:
-                return Respuesta("Operación Fallida", "No se encontró el rol con ese ID", [])
-            # Si existe, proceder a actualizar
-            packed, hmac_val = aeshmac.sellar(rol.GetNombre())
-            rol.SetNombre(packed)
-            rol.SetNombreHmac(hmac_val)
             # Verificar si el rol existe
             rol = dto_a_rol(rolDTO)
             fila_existente = repositorio.MostrarRolPorId(rol)
@@ -108,10 +96,6 @@ class RolServicio:
             fila = repositorio.MostrarRolPorId(rol)
             if not fila:
                 return Respuesta("Operación Fallida", "No existe el rol a eliminar", [])
-            rol = dto_a_rol(rolDTO)
-            fila = repositorio.MostrarRolPorId(rol)
-            if not fila:
-                return Respuesta("Operación Fallida", "No existe el rol a eliminar", [])
             codigo = repositorio.borrarRol(rol)
             if codigo == EXITO:
                 rol = fila_a_rol(fila)
@@ -122,6 +106,21 @@ class RolServicio:
             return Respuesta("Error Sistema", f"Error al eliminar rol: {str(ex)}", [])
 
     def insertarNuevoRol(self, rolDTO: RolDTO) -> Respuesta:
+        try:
+            rol = dto_a_rol(rolDTO)
+            packed, hmac_val = aeshmac.sellar(rol.GetNombre())
+            rol.SetNombre(packed)
+            rol.SetNombreHmac(hmac_val)
+            nuevo_id, codigo = repositorio.insertarRol(rol)
+            if codigo == EXITO:
+                rol.SetId(nuevo_id)
+                rol.SetNombre(aeshmac.desellarlo(rol.GetNombre()))
+                return Respuesta("Operación Exitosa", "Se guardó el nuevo Rol", rol_a_dto(rol).to_dict())
+            elif codigo == ROL_EXISTE:
+                return Respuesta("Operación Fallida", "Rol ya existe", [])
+            return Respuesta("Operación Fallida", "No se realizó el guardado", [])
+        except Exception as ex:
+            return Respuesta("Error Sistema", f"Error en la inserción: {ex}", [])
         try:
             rol = dto_a_rol(rolDTO)
             packed, hmac_val = aeshmac.sellar(rol.GetNombre())

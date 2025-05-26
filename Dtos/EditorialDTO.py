@@ -30,3 +30,9 @@ class EditorialDTO:
     def __str__(self) -> str:
         return f"Id='{self.id}', Nombre='{self.nombre}', País='{self.pais}'"
 
+    def to_dict_simple(self):
+        return {
+            "id":             self.GetId(),
+            "nombre":         self.GetNombre(),
+            "País":         self.GetPais()
+        }

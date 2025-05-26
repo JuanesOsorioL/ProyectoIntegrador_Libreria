@@ -1,6 +1,6 @@
 from Dtos.PrestamoDTO import PrestamoDTO
 from Repositorios.PrestamoRepositorio import PrestamoRepositorio
-from Mapeadores.Mapeadores import prestamo_a_dto, dto_a_prestamo, fila_a_prestamo
+from Mapeadores.PrestamoMapeadores import prestamo_a_dto, dto_a_prestamo, fila_a_prestamo
 from Dtos.Generico.Respuesta import Respuesta
 
 class PrestamoServicio:
@@ -14,20 +14,20 @@ class PrestamoServicio:
         if codigo == 1:
             fila = self.repositorio.mostrarPorId(nuevo_id)
             nuevo = fila_a_prestamo(fila)
-            return Respuesta("Operación Exitosa", "Préstamo registrado", [str(prestamo_a_dto(nuevo))])
+            return Respuesta("Operación Exitosa", "Préstamo registrado", prestamo_a_dto(nuevo).to_dict_simple())
         else:
             return Respuesta("Fallido", "No se pudo insertar el préstamo", [])
 
     def mostrarTodos(self) -> Respuesta:
         filas = self.repositorio.mostrarTodos()
-        resultado = [str(prestamo_a_dto(fila_a_prestamo(f))) for f in filas]
+        resultado = [(prestamo_a_dto(fila_a_prestamo(f))).to_dict_simple() for f in filas]
         return Respuesta("Operación Exitosa", "Listado de préstamos", resultado)
 
     def mostrarPorId(self, dto: PrestamoDTO) -> Respuesta:
         fila = self.repositorio.mostrarPorId(dto.id)
         if fila:
             prestamo = fila_a_prestamo(fila)
-            return Respuesta("Operación Exitosa", "Préstamo encontrado", [str(prestamo_a_dto(prestamo))])
+            return Respuesta("Operación Exitosa", "Préstamo encontrado", prestamo_a_dto(prestamo).to_dict_simple())
         else:
             return Respuesta("Fallido", "Préstamo no encontrado", [])
 
@@ -37,7 +37,7 @@ class PrestamoServicio:
         if codigo == 1:
             fila = self.repositorio.mostrarPorId(prestamo.id)
             actualizado = fila_a_prestamo(fila)
-            return Respuesta("Operación Exitosa", "Préstamo actualizado", [str(prestamo_a_dto(actualizado))])
+            return Respuesta("Operación Exitosa", "Préstamo actualizado", prestamo_a_dto(actualizado).to_dict_simple())
         else:
             return Respuesta("Fallido", "No se pudo actualizar el préstamo", [])
 
@@ -48,6 +48,6 @@ class PrestamoServicio:
         codigo = self.repositorio.borrarPrestamo(dto.id)
         if codigo == 1:
             prestamo = fila_a_prestamo(fila)
-            return Respuesta("Operación Exitosa", "Préstamo eliminado", [str(prestamo_a_dto(prestamo))])
+            return Respuesta("Operación Exitosa", "Préstamo eliminado", prestamo_a_dto(prestamo).to_dict_simple())
         else:
             return Respuesta("Fallido", "No se pudo eliminar el préstamo", [])

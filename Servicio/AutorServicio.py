@@ -23,7 +23,7 @@ class AutorServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Se guardó el nuevo autor",
-                    resultado=[str(autor_a_dto(autor_encontrado))]
+                    resultado=(autor_a_dto(autor_encontrado)).to_dict_simple()
                 )
             elif codigo == AUTOR_EXISTE:
                 return Respuesta(
@@ -50,12 +50,12 @@ class AutorServicio:
             lista = repositorio.MostrarTodosLosAutores()
             for item in lista:
                 autor = Autor(id=item[0], nombre=item[1], nacionalidad=item[2])
-                listaDTO.append(autor_a_dto(autor))
+                listaDTO.append(autor_a_dto(autor).to_dict_simple())
             if listaDTO:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Existen autores registrados",
-                    resultado=[str(dto) for dto in listaDTO]
+                    resultado=[(dto) for dto in listaDTO]
                 )
             else:
                 return Respuesta(
@@ -79,7 +79,7 @@ class AutorServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Autor encontrado",
-                    resultado=[str(autor_a_dto(autor_encontrado))]
+                    resultado=(autor_a_dto(autor_encontrado)).to_dict_simple()
                 )
             else:
                 return Respuesta(
@@ -104,7 +104,7 @@ class AutorServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Autor actualizado correctamente",
-                    resultado=[str(autor_a_dto(autorActualizado))]
+                    resultado=(autor_a_dto(autorActualizado)).to_dict_simple()
                 )
             elif codigo == AUTOR_EXISTE:
                 return Respuesta(
@@ -141,7 +141,7 @@ class AutorServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="El autor se eliminó correctamente",
-                    resultado=[str(autor_a_dto(autorEliminado))]
+                    resultado=(autor_a_dto(autorEliminado)).to_dict_simple()
                 )
             elif codigo == AUTOR_EXISTE:
                 return Respuesta(

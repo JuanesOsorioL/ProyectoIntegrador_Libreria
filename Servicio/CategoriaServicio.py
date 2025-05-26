@@ -23,7 +23,7 @@ class CategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Se guardó la nueva categoría",
-                    resultado=[str(categoria_a_dto(categoria_encontrada))]
+                    resultado=(categoria_a_dto(categoria_encontrada)).to_dict_simple()
                 )
             elif codigo == CATEGORIA_EXISTE:
                 return Respuesta(
@@ -50,12 +50,12 @@ class CategoriaServicio:
             lista = repositorio.MostrarTodasLasCategorias()
             for item in lista:
                 categoria = Categoria(id=item[0], nombre=item[1])
-                listaDTO.append(categoria_a_dto(categoria))
+                listaDTO.append(categoria_a_dto(categoria).to_dict_simple())
             if listaDTO:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Existen categorías registradas",
-                    resultado=[str(dto) for dto in listaDTO]
+                    resultado=[(dto) for dto in listaDTO]
                 )
             else:
                 return Respuesta(
@@ -79,7 +79,7 @@ class CategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Categoría encontrada",
-                    resultado=[str(categoria_a_dto(categoria_encontrada))]
+                    resultado=(categoria_a_dto(categoria_encontrada)).to_dict_simple()
                 )
             else:
                 return Respuesta(
@@ -104,7 +104,7 @@ class CategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Categoría actualizada correctamente",
-                    resultado=[str(categoria_a_dto(categoriaActualizada))]
+                    resultado=(categoria_a_dto(categoriaActualizada)).to_dict_simple()
                 )
             elif codigo == CATEGORIA_EXISTE:
                 return Respuesta(
@@ -141,7 +141,7 @@ class CategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="La categoría se eliminó correctamente",
-                    resultado=[str(categoria_a_dto(categoriaEliminada))]
+                    resultado=(categoria_a_dto(categoriaEliminada)).to_dict_simple()
                 )
             elif codigo == CATEGORIA_EXISTE:
                 return Respuesta(

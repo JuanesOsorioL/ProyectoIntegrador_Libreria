@@ -6,3 +6,10 @@ class DetallePrestamoDTO:
 
     def __str__(self):
         return f"Prestamo ID: {self.prestamo_id}, Libro ID: {self.libro_id}, Cantidad: {self.cantidad}"
+
+    def to_dict_simple(self):
+        return {
+            "PrestamoId": self.prestamo_id,
+            "LibroId": self.libro_id,
+            "Cantidad": self.cantidad
+        }

@@ -2,22 +2,32 @@ import pyodbc
 from Entidades.Devolucion import Devolucion
 from Utilidades.Configuracion import Configuracion
 
+
 class DevolucionRepositorio:
 
     def insertarDevolucion(self, devolucion: Devolucion) -> tuple:
         try:
+            print(devolucion.to_dict_simple())
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_insert_devolucion(?, ?, ?, @p_NuevoId, @p_Respuesta)}"
+
+            consulta = "{CALL proc_insert_devolucion(?, ?, ? ,?, @p_NuevoId, @p_Respuesta)}"
             cursor.execute(consulta, (
                 devolucion.GetFechaRealDevolucion(),
+                devolucion.GetPrestamoId(),
                 devolucion.GetEstadoLibro(),
                 devolucion.GetObservaciones()
             ))
             cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
             resultado = cursor.fetchone()
             conexion.commit()
-            return resultado
+            print(resultado)
+            if resultado:
+                nuevo_id = resultado.nuevo_id
+                codigo = resultado.respuesta
+                return (nuevo_id, codigo)
+            else:
+                return (None, -1)
         finally:
             cursor.close()
             conexion.close()
@@ -46,9 +56,10 @@ class DevolucionRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_update_devolucion(?, ?, ?, ?, @Respuesta)}"
+            consulta = "{CALL proc_update_devolucion(?,?, ?, ?, ?, @Respuesta)}"
             cursor.execute(consulta, (
                 devolucion.GetId(),
+                devolucion.GetPrestamoId(),
                 devolucion.GetFechaRealDevolucion(),
                 devolucion.GetEstadoLibro(),
                 devolucion.GetObservaciones()

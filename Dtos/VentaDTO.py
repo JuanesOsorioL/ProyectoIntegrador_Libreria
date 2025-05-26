@@ -9,3 +9,12 @@ class VentaDTO:
     def __str__(self):
         return (f"ID: {self.id}, Usuario ID: {self.usuario_id}, Empleado ID: {self.empleado_id}, "
                 f"Fecha: {self.fecha}, Total: {self.total}")
+    
+    def to_dict_simple(self):
+        return {
+            "Id": self.id,
+            "UsuarioId": self.usuario_id,
+            "EmpleadoId": self.empleado_id,
+            "Fecha": self.fecha,
+            "Total": self.total
+        }

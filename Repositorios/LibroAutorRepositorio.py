@@ -8,10 +8,10 @@ class LibroAutorRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_insert_libro_autor(?, ?, @p_NuevoId, @p_Respuesta)}"
-            cursor.execute(consulta, (libro_autor.GetIdLibro(), libro_autor.GetIdAutor()))
-            cursor.execute("SELECT @p_NuevoId AS nuevo_id, @p_Respuesta AS respuesta;")
-            resultado = cursor.fetchone()
+            consulta = "{CALL proc_insert_libro_autor(?, ?, @p_Respuesta)}"
+            cursor.execute(consulta, (libro_autor.GetLibroId(), libro_autor.GetAutorId()))
+            cursor.execute("SELECT @p_Respuesta AS respuesta;")
+            resultado = cursor.fetchone()[0]
             conexion.commit()
             return resultado
         finally:
@@ -32,22 +32,24 @@ class LibroAutorRepositorio:
 
     def mostrarLibroAutorPorId(self, libro_autor: LibroAutor) -> tuple:
         try:
+            
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_select_libro_autor_por_id(?)}"
-            cursor.execute(consulta, libro_autor.GetId())
+            consulta = "{CALL proc_select_libro_autor_por_id(?, ?)}"
+            cursor.execute(consulta, (libro_autor.GetLibroId(), libro_autor.GetAutorId()))
             resultado = cursor.fetchone()
+            
             return resultado
         finally:
             cursor.close()
             conexion.close()
 
-    def actualizarLibroAutor(self, libro_autor: LibroAutor) -> int:
+    def actualizarLibroAutor(self, libro_autor: LibroAutor,AntesAutorId:int,AntesLibroId:int) -> int:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_update_libro_autor(?, ?, ?, @Respuesta)}"
-            cursor.execute(consulta, (libro_autor.GetId(), libro_autor.GetIdLibro(), libro_autor.GetIdAutor()))
+            consulta = "{CALL proc_update_libro_autor(?,?, ?, ?, @Respuesta)}"
+            cursor.execute(consulta, ( AntesLibroId,AntesAutorId, libro_autor.GetLibroId(), libro_autor.GetAutorId()))
             cursor.execute("SELECT @Respuesta;")
             respuesta = cursor.fetchone()[0]
             conexion.commit()
@@ -60,8 +62,8 @@ class LibroAutorRepositorio:
         try:
             conexion = pyodbc.connect(Configuracion.strConnection)
             cursor = conexion.cursor()
-            consulta = "{CALL proc_delete_libro_autor(?, @Respuesta)}"
-            cursor.execute(consulta, libro_autor.GetId())
+            consulta = "{CALL proc_delete_libro_autor(?, ?, @p_Respuesta)}"
+            cursor.execute(consulta, (libro_autor.GetLibroId(), libro_autor.GetAutorId()))
             cursor.execute("SELECT @Respuesta;")
             respuesta = cursor.fetchone()[0]
             conexion.commit()

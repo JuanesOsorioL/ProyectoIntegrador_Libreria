@@ -38,4 +38,5 @@ class CrearBDServicio:
         return Respuesta(
             "Operación Exitosa",
             "Tablas, procedimientos y roles iniciales creados correctamente.",
-            [])
+            []
+        )
