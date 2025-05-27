@@ -20,3 +20,9 @@ class LibroCategoriaDTO:
 
     def __str__(self) -> str:
         return f"LibroId='{self.libro_id}', CategoriaId='{self.categoria_id}'"
+    
+    def to_dict_simple(self):
+        return {
+            "LibroId":self.GetLibroId(), 
+            "CategoriaId":self.GetCategoriaId()
+            }

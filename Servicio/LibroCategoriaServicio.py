@@ -21,7 +21,7 @@ class LibroCategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Se registró la relación libro-categoría",
-                    resultado=[str(dto)]
+                    resultado=dto.to_dict_simple()
                 )
             elif codigo == YA_EXISTE:
                 return Respuesta(
@@ -45,12 +45,12 @@ class LibroCategoriaServicio:
     def mostrarTodosLosLibroCategoria(self) -> Respuesta:
         try:
             lista = repositorio.mostrarTodosLosLibroCategoria()
-            listaDTO = [libro_categoria_a_dto(fila_a_libro_categoria(f)) for f in lista]
+            listaDTO = [libro_categoria_a_dto(fila_a_libro_categoria(f)).to_dict_simple() for f in lista]
             if listaDTO:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Relaciones encontradas",
-                    resultado=[str(dto) for dto in listaDTO]
+                    resultado=[(dto) for dto in listaDTO]
                 )
             else:
                 return Respuesta(
@@ -74,7 +74,7 @@ class LibroCategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Relación encontrada",
-                    resultado=[str(libro_categoria_a_dto(encontrado))]
+                    resultado=libro_categoria_a_dto(encontrado).to_dict_simple()
                 )
             else:
                 return Respuesta(
@@ -98,7 +98,7 @@ class LibroCategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Relación actualizada",
-                    resultado=[str(dto_nuevo)]
+                    resultado=dto_nuevo.to_dict_simple()
                 )
             elif codigo == NO_EXISTE:
                 return Respuesta(
@@ -134,7 +134,7 @@ class LibroCategoriaServicio:
                 return Respuesta(
                     estado="Operación Exitosa",
                     msj="Relación eliminada",
-                    resultado=[str(dto)]
+                    resultado=dto.to_dict_simple()
                 )
             else:
                 return Respuesta(

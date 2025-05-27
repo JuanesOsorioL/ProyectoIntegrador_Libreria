@@ -98,7 +98,7 @@ class CrearBDRepositorio:
                 """,
                 # Libro–Categoría
                 """
-                CREATE TABLE libro_categoria (
+                CREATE TABLE libros_categorias (
                     libro_id INT,
                     categoria_id INT,
                     PRIMARY KEY (libro_id, categoria_id),

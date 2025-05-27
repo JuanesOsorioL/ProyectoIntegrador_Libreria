@@ -1,22 +1,11 @@
 from datetime import datetime
 from flask import Flask, request, jsonify
-
-from Utilidades.ValidarToken import ValidarToken
 from Cifrados.JWT import JWT
 from Dtos.Generico.Respuesta import Respuesta
 
 from Controlador.CrearBDControlador import CrearBDControlador
 from Controlador.UsuarioControlador import UsuarioControlador
 from Controlador.UsuarioSistemaControlador import UsuarioSistemaControlador
-
-from Controlador.LibroCategoriaControlador import LibroCategoriaControlador
-
-
-
-
-
-
-
 
 from Rutas.UsuarioRutas import appUsuarios
 from Rutas.UsuarioSistemaRutas import appUsuariosSistema
@@ -31,17 +20,13 @@ from Rutas.VentaRutas import appVentas
 from Rutas.DetalleVentaRutas import appDetallesVentas
 from Rutas.DetallePrestamo import appDetallesPrestamos
 from Rutas.LibroAutorRutas import appLibroAutores
-
+from Rutas.LibroCategorias import appLibroCategoria
 
 jwt=JWT()
 app = Flask(__name__)
 
 usuarioSistemaControlador = UsuarioSistemaControlador()
 usuarioControlador=UsuarioControlador()
-
-libroCategoriaControlador=LibroCategoriaControlador()
-
-
 
 app.register_blueprint(appUsuarios)
 app.register_blueprint(appUsuariosSistema)
@@ -56,7 +41,7 @@ app.register_blueprint(appVentas)
 app.register_blueprint(appDetallesVentas)
 app.register_blueprint(appDetallesPrestamos)
 app.register_blueprint(appLibroAutores)
-
+app.register_blueprint(appLibroCategoria)
 
 
 def validar_fecha(fecha_str: str) -> bool:
@@ -116,123 +101,5 @@ def login():
     except Exception as e:
         return jsonify({"error": "Error interno del servidor"}), 500
     
-#usuario
-
-
-# Rutas para usuarios del sistema
-
-
-
-# Rol
-
-
-
-
-#Autor
-
-
-
-# Categoría
-
-
-# Editorial
-
-
-
-# DEVOLUCIONES
-
-
-# LIBROS
-
-
-# VENTAS
-
-
-# Detalle Ventas
-
-
-
-# Prestamo
-
-
-
-# Detalle Prestamo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Libro-Autor (relación) no verificada
-
-# Libro-Categoría (relación)
-
-@app.route('/libros-categorias', methods=['GET'])
-@ValidarToken(1)
-def obtener_libros_categorias():
-    respuesta: Respuesta = libroCategoriaControlador.mostrarTodosLosLibroCategoria()
-    body = respuesta.to_dict()
-    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
-
-
-@app.route('/libros-categorias/<int:libro_id>/<int:categoria_id>', methods=['GET'])
-@ValidarToken(1)
-def obtener_libro_categoria_por_id(libro_id, categoria_id):
-    respuesta: Respuesta = libroCategoriaControlador.mostrarLibroCategoriaPorId(libro_id, categoria_id)
-    body = respuesta.to_dict()
-    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 404
-
-
-@app.route('/libros-categorias/<int:libro_id>/<int:categoria_id>', methods=['DELETE'])
-@ValidarToken(1)
-def eliminar_libro_categoria(libro_id, categoria_id):
-    respuesta: Respuesta = libroCategoriaControlador.borrarLibroCategoria(libro_id, categoria_id)
-    body = respuesta.to_dict()
-    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
-
-
-@app.route('/libros-categorias', methods=['POST'])
-@ValidarToken(1)
-def crear_libro_categoria():
-    payload = request.get_json()
-    libro_id = payload.get('libro_id')
-    categoria_id = payload.get('categoria_id')
-    respuesta: Respuesta = libroCategoriaControlador.insertarLibroCategoria(libro_id, categoria_id)
-    body = respuesta.to_dict()
-    return jsonify(body), 201 if respuesta.get_estado() == "Operación Exitosa" else 400
-
-@app.route('/libros-categorias/<int:id>', methods=['PUT'])
-@ValidarToken(1)
-def actualizar_libro_categoria(id):
-    payload = request.get_json()
-    libro_id = payload.get('libro_id')
-    categoria_id = payload.get('categoria_id')
-    respuesta: Respuesta = libroCategoriaControlador.actualizarLibroCategoria(id, libro_id, categoria_id)
-    body = respuesta.to_dict()
-    return jsonify(body), 200 if respuesta.get_estado() == "Operación Exitosa" else 400
-
-
-
-
-
-
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=5000)
-
